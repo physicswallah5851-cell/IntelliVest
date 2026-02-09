@@ -138,32 +138,38 @@ def login():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        email = request.form.get('email')
-        name = request.form.get('name')
-        password = request.form.get('password')
-        
-        user = User.query.filter_by(email=email).first()
-        if user:
-            flash('Email already exists', 'error')
+        try:
+            email = request.form.get('email')
+            name = request.form.get('name')
+            password = request.form.get('password')
+            
+            # Helper to check if user exists
+            user = User.query.filter_by(email=email).first()
+            if user:
+                flash('Email already exists', 'error')
+                return redirect(url_for('signup'))
+                
+            new_user = User(
+                email=email, 
+                name=name, 
+                password=generate_password_hash(password, method='pbkdf2:sha256')
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            
+            login_user(new_user)
+            session['name'] = new_user.name
+            session['initials'] = ''.join([n[0] for n in new_user.name.split()[:2]]).upper()
+            
+            # Seed initial data for new user
+            seed_data(new_user.id)
+            
+            return redirect(url_for('home'))
+        except Exception as e:
+            app.logger.error(f"Signup Error: {e}")
+            flash(f"Signup failed: {str(e)}", 'error')
             return redirect(url_for('signup'))
             
-        new_user = User(
-            email=email, 
-            name=name, 
-            password=generate_password_hash(password, method='pbkdf2:sha256')
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        
-        login_user(new_user)
-        session['name'] = new_user.name
-        session['initials'] = ''.join([n[0] for n in new_user.name.split()[:2]]).upper()
-        
-        # Seed initial data for new user
-        seed_data(new_user.id)
-        
-        return redirect(url_for('home'))
-        
     return render_template('signup.html')
 
 @app.route('/logout')
