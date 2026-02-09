@@ -60,7 +60,7 @@ def dashboard_api():
 @app.route('/api/simulation', methods=['POST'])
 @login_required
 def simulation_api():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     cost = float(data.get('cost', 0))
     monthly = float(data.get('monthly', 0))
     

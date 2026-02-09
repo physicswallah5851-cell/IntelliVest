@@ -502,6 +502,11 @@
                     showNotifications: false,
                     showNewModal: false,
                     showDonate: false,
+                    session: {
+                        name: '{{ session.get("name", "User") }}',
+                        initials: '{{ session.get("initials", "U") }}',
+                        user: '{{ session.get("user", "user@example.com") }}'
+                    },
                     copied: false
                 }
             },

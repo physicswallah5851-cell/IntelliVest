@@ -426,6 +426,11 @@
                         { name: 'SGB 2016-17 Series I', type: 'SGB', maturity: 'Aug 2024', coupon: '2.75%', price: 6180.00, yield: 3.10 },
                         { name: '7.30% GS 2053', type: 'G-Sec', maturity: 'Jun 2053', coupon: '7.30%', price: 101.20, yield: 7.19 }
                     ],
+                    session: {
+                        name: '{{ session.get("name", "User") }}',
+                        initials: '{{ session.get("initials", "U") }}',
+                        user: '{{ session.get("user", "user@example.com") }}'
+                    },
                     toast: { show: false, message: '' }
                 }
             },
