@@ -201,6 +201,41 @@
                         </div>
                     </div>
 
+
+                    <!-- Donation Modal (Moved Inside #app) -->
+                    <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+                        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+                        <div
+                            class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+                            <button @click="showDonate = false"
+                                class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                            <div
+                                class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-heart text-3xl text-pink-500"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+                            <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+                            <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                                    alt="Donate QR" class="w-48 h-48">
+                            </div>
+                            <div
+                                class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                                <div class="text-xs text-slate-400 text-left">
+                                    <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                                    <div class="text-white font-mono">faisal19262@oksbi</div>
+                                </div>
+                                <button @click="copyUPI"
+                                    class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase" v-cloak>
+                                    [[ copied ? 'Copied!' : 'Copy' ]]
+                                </button>
+                            </div>
+                            <div class="mt-6 text-xs text-slate-500">Scan with GPay, PhonePe, or Paytm</div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
@@ -254,37 +289,6 @@
             }
         }).mount('#app')
     </script>
-    </div>
-
-    <!-- Donation Modal -->
-    <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
-        <div
-            class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
-            <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-            <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-heart text-3xl text-pink-500"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
-            <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
-            <div class="bg-white p-4 rounded-xl mb-6 inline-block">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
-                    alt="Donate QR" class="w-48 h-48">
-            </div>
-            <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
-                <div class="text-xs text-slate-400 text-left">
-                    <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
-                    <div class="text-white font-mono">faisal19262@oksbi</div>
-                </div>
-                <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
-                    [[ copied ? 'Copied!' : 'Copy' ]]
-                </button>
-            </div>
-            <div class="mt-6 text-xs text-slate-500">Scan with GPay, PhonePe, or Paytm</div>
-        </div>
-    </div>
 </body>
 
 </html>
