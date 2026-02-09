@@ -390,7 +390,12 @@
                     allocation: [],
                     chart: null,
                     projectedValue: 0,
-                    roi: 0
+                    roi: 0,
+                    session: {
+                        name: '{{ session.get("name", "User") }}',
+                        initials: '{{ session.get("initials", "U") }}',
+                        user: '{{ session.get("user", "user@example.com") }}'
+                    }
                 }
             },
             computed: {
