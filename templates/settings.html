@@ -197,39 +197,40 @@
 
         createApp({
             delimiters: ['[[', ']]'],
-            return {
-                showProfileMenu: false,
-                isDarkMode: true,
-                session: {
-                    name: '{{ session.get("name", "User") }}',
-                    initials: '{{ session.get("initials", "U") }}',
-                    user: '{{ session.get("user", "user@example.com") }}'
+            data() {
+                return {
+                    showProfileMenu: false,
+                    isDarkMode: true,
+                    session: {
+                        name: '{{ session.get("name", "User") }}',
+                        initials: '{{ session.get("initials", "U") }}',
+                        user: '{{ session.get("user", "user@example.com") }}'
+                    }
                 }
-            }
-        },
+            },
             mounted() {
                 // Check local storage
                 const savedTheme = localStorage.getItem('theme');
-                if(savedTheme === 'light') {
-            this.isDarkMode = false;
-            document.body.classList.add('light-mode');
-        } else {
-            this.isDarkMode = true;
-            document.body.classList.remove('light-mode');
-        }
-            },
-        methods: {
-            toggleTheme() {
-                this.isDarkMode = !this.isDarkMode;
-                if (this.isDarkMode) {
-                    document.body.classList.remove('light-mode');
-                    localStorage.setItem('theme', 'dark');
-                } else {
+                if (savedTheme === 'light') {
+                    this.isDarkMode = false;
                     document.body.classList.add('light-mode');
-                    localStorage.setItem('theme', 'light');
+                } else {
+                    this.isDarkMode = true;
+                    document.body.classList.remove('light-mode');
+                }
+            },
+            methods: {
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    if (this.isDarkMode) {
+                        document.body.classList.remove('light-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.add('light-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
                 }
             }
-        }
         }).mount('#app')
     </script>
 </body>

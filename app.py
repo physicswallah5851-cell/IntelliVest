@@ -209,8 +209,8 @@ def calculator():
 
 @app.route('/mobile')
 def mobile_access():
-    # Hardcoded public URL from the active tunnel
-    public_url = "https://684c73edcce0a428-115-245-68-163.serveousercontent.com"
+    # Dynamically get the current host (works for both Local and Render)
+    public_url = request.host_url.rstrip('/')
     return render_template('mobile.html', url=public_url)
 
 @app.route('/debug')
