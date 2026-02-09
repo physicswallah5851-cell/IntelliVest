@@ -11,7 +11,13 @@ app.secret_key = 'intellivest_secure_v3_key_reset_final'
 
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'finance_v2.db')
+
+# Priority: Environment variable (Render PostgreSQL), Fallback: Local SQLite
+db_url = os.environ.get('DATABASE_URL')
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url or ('sqlite:///' + os.path.join(basedir, 'finance_v2.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize Extensions
@@ -57,6 +63,34 @@ def dashboard_api():
             "data": [100000, 110000, 105000, 120000, 115000, current_savings]
         }
     })
+
+@app.route('/api/transactions', methods=['POST'])
+@login_required
+def add_transaction():
+    data = request.get_json(silent=True) or {}
+    try:
+        new_tx = Transaction(
+            user_id=current_user.id,
+            description=data.get('description', 'Untitled'),
+            amount=float(data.get('amount', 0)),
+            category=data.get('category', 'General'),
+            date=datetime.now()
+        )
+        db.session.add(new_tx)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Transaction added"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/api/transactions/<int:tx_id>', methods=['DELETE'])
+@login_required
+def delete_transaction(tx_id):
+    tx = Transaction.query.filter_by(id=tx_id, user_id=current_user.id).first()
+    if tx:
+        db.session.delete(tx)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Not found"}), 404
 @app.route('/api/simulation', methods=['POST'])
 @login_required
 def simulation_api():
@@ -102,7 +136,6 @@ def simulation_api():
 @app.route('/api/budgets')
 @login_required
 def budgets_api():
-    budgets = Budget.query.filter_by(user_id=current_user.id).all()
     return jsonify([{
         "id": b.id,
         "name": b.name,
@@ -110,8 +143,40 @@ def budgets_api():
         "spent": b.spent,
         "icon": b.icon,
         "color": b.color,
-        "transactions": 12 # Mock count for now, or link to real tx count later
+        "transactions": Transaction.query.filter_by(user_id=current_user.id, category=b.name).count()
     } for b in budgets])
+
+@app.route('/api/budgets', methods=['POST'])
+@login_required
+def save_budget():
+    data = request.get_json(silent=True) or {}
+    try:
+        budget_id = data.get('id')
+        if budget_id:
+            budget = Budget.query.filter_by(id=budget_id, user_id=current_user.id).first()
+        else:
+            budget = Budget(user_id=current_user.id)
+            db.session.add(budget)
+            
+        budget.name = data.get('name', 'New Category')
+        budget.limit = float(data.get('limit', 0))
+        budget.icon = data.get('icon', 'fas fa-wallet')
+        budget.color = data.get('color', '#3B82F6')
+        
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/api/budgets/<int:budget_id>', methods=['DELETE'])
+@login_required
+def delete_budget(budget_id):
+    budget = Budget.query.filter_by(id=budget_id, user_id=current_user.id).first()
+    if budget:
+        db.session.delete(budget)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Not found"}), 404
 
 # --- Routes ---
 @app.route('/')

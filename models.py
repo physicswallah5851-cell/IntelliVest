@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     # Relationships
     transactions = db.relationship('Transaction', backref='user', lazy=True)
     portfolio = db.relationship('Portfolio', backref='user', lazy=True)
+    budgets = db.relationship('Budget', backref='user', lazy=True)
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

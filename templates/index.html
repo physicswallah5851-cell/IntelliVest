@@ -415,27 +415,29 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Description</label>
-                            <input type="text" placeholder="e.g. Salary, Rent"
+                            <input type="text" v-model="newTransaction.description" placeholder="e.g. Salary, Rent"
                                 class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Amount (₹)</label>
-                                <input type="number" placeholder="0.00"
+                                <input type="number" v-model="newTransaction.amount" placeholder="0.00"
                                     class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Category</label>
-                                <select class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
+                                <select v-model="newTransaction.category"
+                                    class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
                                     <option>Food & Dining</option>
                                     <option>Travel</option>
                                     <option>SIP/Investment</option>
                                     <option>Utilities</option>
+                                    <option>General</option>
                                 </select>
                             </div>
                         </div>
-                        <button @click="showNewModal = false"
-                            class="w-full btn-primary py-3 rounded-xl font-bold text-white mt-4">
+                        <button @click="addTransaction"
+                            class="w-full btn-primary py-3 rounded-xl font-bold text-white mt-4 bg-purple-600 hover:bg-purple-500 transition-colors">
                             Save Transaction
                         </button>
                     </div>
@@ -645,6 +647,24 @@
                             }
                         }
                     });
+                },
+                async addTransaction() {
+                    if (!this.newTransaction.description || !this.newTransaction.amount) return;
+                    try {
+                        const response = await fetch('/api/transactions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newTransaction)
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            this.showNewModal = false;
+                            this.newTransaction = { description: '', amount: '', category: 'General' };
+                            this.fetchData();
+                        }
+                    } catch (error) {
+                        console.error('Error adding transaction:', error);
+                    }
                 },
                 copyUPI() {
                     navigator.clipboard.writeText('faisal19262@oksbi');
