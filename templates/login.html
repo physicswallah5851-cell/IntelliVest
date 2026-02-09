@@ -44,6 +44,12 @@
     <div class="absolute top-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl -ml-20 -mt-20"></div>
     <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl -mr-20 -mb-20"></div>
 
+    <!-- Donation Icon -->
+    <button @click="showDonate = true"
+        class="absolute top-6 right-6 w-12 h-12 rounded-full bg-pink-500/10 hover:bg-pink-500/20 flex items-center justify-center transition-colors z-50">
+        <i class="fas fa-heart text-pink-500 text-xl"></i>
+    </button>
+
     <div class="w-full max-w-md p-8 glass-panel z-10 relative">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
@@ -91,6 +97,59 @@
             Don't have an account? <a href="/signup" class="text-purple-400 font-bold hover:text-purple-300">Sign up</a>
         </div>
     </div>
+    </div>
+
+    <!-- Donation Modal -->
+    <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+        <div
+            class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-heart text-3xl text-pink-500"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+            <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+            <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                    alt="Donate QR" class="w-48 h-48">
+            </div>
+            <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                <div class="text-xs text-slate-400 text-left">
+                    <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                    <div class="text-white font-mono">faisal19262@oksbi</div>
+                </div>
+                <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                    [[ copied ? 'Copied!' : 'Copy' ]]
+                </button>
+            </div>
+            <div class="mt-6 text-xs text-slate-500">Scan with GPay, PhonePe, or Paytm</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        const { createApp } = Vue
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    showDonate: false,
+                    copied: false
+                }
+            },
+            methods: {
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                }
+            }
+        }).mount('body')
+    </script>
 </body>
 
 </html>
