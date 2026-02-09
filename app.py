@@ -155,7 +155,7 @@ def budgets_api():
         "icon": b.icon,
         "color": b.color,
         "transactions": Transaction.query.filter_by(user_id=current_user.id, category=b.name).count()
-    } for b in budgets])
+    } for b in current_user.budgets])
 
 @app.route('/api/budgets', methods=['POST'])
 @login_required
@@ -188,6 +188,44 @@ def delete_budget(budget_id):
         db.session.commit()
         return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "Not found"}), 404
+
+@app.route('/api/portfolio')
+@login_required
+def portfolio_api():
+    plans = Portfolio.query.filter_by(user_id=current_user.id).all()
+    return jsonify([{
+        "id": p.id,
+        "symbol": p.symbol,
+        "company_name": p.company_name,
+        "date": p.added_at.strftime('%Y-%m-%d')
+    } for p in plans])
+
+@app.route('/api/portfolio', methods=['POST'])
+@login_required
+def save_portfolio():
+    data = request.get_json(silent=True) or {}
+    try:
+        new_plan = Portfolio(
+            user_id=current_user.id,
+            symbol=data.get('symbol'),
+            company_name=data.get('company_name')
+        )
+        db.session.add(new_plan)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/api/portfolio/<int:plan_id>', methods=['DELETE'])
+@login_required
+def delete_portfolio(plan_id):
+    plan = Portfolio.query.filter_by(id=plan_id, user_id=current_user.id).first()
+    if plan:
+        db.session.delete(plan)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Not found"}), 404
+
 
 # --- Routes ---
 @app.route('/')
