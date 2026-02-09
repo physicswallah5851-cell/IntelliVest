@@ -152,6 +152,11 @@
                     <input v-model="searchQuery" type="text" placeholder="Search BSE Scrip (e.g., RELIANCE, 500325)..."
                         class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-purple-500 text-sm">
                 </div>
+                <!-- Donation Icon for Mobile -->
+                <button @click="showDonate = true"
+                    class="w-10 h-10 rounded-full bg-pink-500/10 hover:bg-pink-500/20 flex items-center justify-center transition-colors lg:hidden">
+                    <i class="fas fa-heart text-pink-500"></i>
+                </button>
             </header>
 
             <div class="flex-1 overflow-y-auto p-8">

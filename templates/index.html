@@ -192,6 +192,11 @@
                         <i class="far fa-bell text-slate-400"></i>
                         <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
+                    <!-- Donation Icon for Mobile -->
+                    <button @click="showDonate = true"
+                        class="w-10 h-10 rounded-full bg-pink-500/10 hover:bg-pink-500/20 flex items-center justify-center transition-colors lg:hidden">
+                        <i class="fas fa-heart text-pink-500"></i>
+                    </button>
                     <!-- Notification Dropdown -->
                     <div v-if="showNotifications"
                         class="absolute top-16 right-4 w-80 bg-slate-900 rounded-xl border border-slate-700 shadow-2xl z-50 p-4 fade-in transform origin-top-right">
