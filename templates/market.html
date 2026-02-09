@@ -191,6 +191,10 @@
                         class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-purple-500 text-sm">
                 </div>
                 <div class="flex items-center space-x-4">
+                    <button @click="toggleTheme"
+                        class="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-700/50 flex items-center justify-center transition-colors border border-slate-700">
+                        <i :class="isDarkMode ? 'fas fa-sun text-yellow-500' : 'fas fa-moon text-blue-500'"></i>
+                    </button>
                     <button @click="showDonate = true"
                         class="w-10 h-10 rounded-full bg-pink-500/10 hover:bg-pink-500/20 flex items-center justify-center transition-colors lg:hidden">
                         <i class="fas fa-heart text-pink-500"></i>
@@ -499,6 +503,7 @@
                         initials: '{{ session.get("initials", "U") }}',
                         user: '{{ session.get("user", "user@example.com") }}'
                     },
+                    isDarkMode: true,
                     showNewModal: false,
                     newTransaction: { description: '', amount: '', category: 'General' },
                     toast: { show: false, message: '' }
@@ -507,7 +512,11 @@
             mounted() {
                 const savedTheme = localStorage.getItem('theme');
                 if (savedTheme === 'light') {
+                    this.isDarkMode = false;
                     document.body.classList.add('light-mode');
+                } else {
+                    this.isDarkMode = true;
+                    document.body.classList.remove('light-mode');
                 }
             },
             computed: {
@@ -521,6 +530,16 @@
                 }
             },
             methods: {
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    if (this.isDarkMode) {
+                        document.body.classList.remove('light-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.add('light-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                },
                 copyUPI() {
                     navigator.clipboard.writeText('faisal19262@oksbi');
                     this.copied = true;
