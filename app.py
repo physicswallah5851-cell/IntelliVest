@@ -8,7 +8,10 @@ from models import db, User, Transaction, Portfolio, Budget
 app = Flask(__name__)
 # Changed key to invalidate old sessions
 app.secret_key = 'intellivest_secure_v3_key_reset_final'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance_v2.db'
+
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'finance_v2.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize Extensions
@@ -209,6 +212,32 @@ def mobile_access():
     # Hardcoded public URL from the active tunnel
     public_url = "https://684c73edcce0a428-115-245-68-163.serveousercontent.com"
     return render_template('mobile.html', url=public_url)
+
+@app.route('/debug')
+def debug_info():
+    try:
+        import os
+        cwd = os.getcwd()
+        writable = os.access(cwd, os.W_OK)
+        db_path = app.config['SQLALCHEMY_DATABASE_URI']
+        
+        # Try DB connection
+        user_count = -1
+        try:
+            user_count = User.query.count()
+            db_status = "Connected"
+        except Exception as e:
+            db_status = f"Error: {e}"
+            
+        return jsonify({
+            "cwd": cwd,
+            "writable": writable,
+            "db_path": db_path,
+            "db_status": db_status,
+            "user_count": user_count
+        })
+    except Exception as e:
+        return str(e)
 
 
 def seed_data(user_id):
