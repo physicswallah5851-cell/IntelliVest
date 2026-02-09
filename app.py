@@ -218,12 +218,12 @@ def seed_data(user_id):
     db.session.add_all([b1, b2, b3])
     
     db.session.commit()
+    
+# Create DB if not exists (This runs on Import for Gunicorn)
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
-    # Create DB if not exists
-    with app.app_context():
-        db.create_all()
-        pass
         
     # Run on all interfaces for tunnel compatibility
     import os
