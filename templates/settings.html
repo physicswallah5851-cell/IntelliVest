@@ -215,6 +215,8 @@
                 return {
                     showProfileMenu: false,
                     isDarkMode: true,
+                    showDonate: false,
+                    copied: false,
                     session: {
                         name: '{{ session.get("name", "User") }}',
                         initials: '{{ session.get("initials", "U") }}',
@@ -234,6 +236,11 @@
                 }
             },
             methods: {
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
                 toggleTheme() {
                     this.isDarkMode = !this.isDarkMode;
                     if (this.isDarkMode) {
