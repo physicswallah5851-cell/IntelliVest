@@ -252,7 +252,13 @@
                                 class="absolute top-0 right-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-purple-500/30">
                             </div>
                             <p class="text-slate-400 text-sm mb-1">Total Balance</p>
-                            <h2 class="text-4xl font-bold text-white mb-2">[[ formatPrice(data.balance) ]]</h2>
+                            <div class="flex items-end justify-between">
+                                <h2 class="text-4xl font-bold text-white mb-2">[[ formatPrice(data.balance) ]]</h2>
+                                <button @click="showBalanceModal = true"
+                                    class="text-purple-400 hover:text-purple-300 text-xs mb-3 font-bold uppercase transition-colors">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </button>
+                            </div>
                             <div class="flex items-center text-green-400 text-sm font-medium">
                                 <i class="fas fa-arrow-up mr-1"></i> 12.5% vs last month
                             </div>
@@ -444,6 +450,31 @@
                 </div>
             </div>
 
+            <!-- Set Initial Balance Modal -->
+            <div v-if="showBalanceModal"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center fade-in">
+                <div class="glass-panel p-8 w-full max-w-sm relative">
+                    <button @click="showBalanceModal = false"
+                        class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                    <h2 class="text-xl font-bold mb-4">Set Starting Capital</h2>
+                    <p class="text-slate-400 text-xs mb-6">Enter your current available balance to track your growth
+                        accurately.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Amount (₹)</label>
+                            <input type="number" v-model="tempInitialBalance" placeholder="100000"
+                                class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
+                        </div>
+                        <button @click="updateBalance"
+                            class="w-full btn-primary py-3 rounded-xl font-bold text-white mt-4 bg-purple-600 hover:bg-purple-500 transition-colors">
+                            Update Balance
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Donation Modal -->
             <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
                 <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
@@ -509,6 +540,8 @@
                     showNotifications: false,
                     showNewModal: false,
                     showDonate: false,
+                    showBalanceModal: false,
+                    tempInitialBalance: 100000,
                     session: {
                         name: '{{ session.get("name", "User") }}',
                         initials: '{{ session.get("initials", "U") }}',
@@ -664,6 +697,21 @@
                         }
                     } catch (error) {
                         console.error('Error adding transaction:', error);
+                    }
+                },
+                async updateBalance() {
+                    try {
+                        const response = await fetch('/api/user/balance', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ balance: this.tempInitialBalance })
+                        });
+                        if (response.ok) {
+                            this.showBalanceModal = false;
+                            this.fetchData();
+                        }
+                    } catch (error) {
+                        console.error('Error updating balance:', error);
                     }
                 },
                 copyUPI() {

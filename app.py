@@ -40,7 +40,7 @@ def dashboard_api():
     # Calculate Totals
     income = sum(t.amount for t in transactions if t.amount > 0)
     expenses = sum(abs(t.amount) for t in transactions if t.amount < 0)
-    current_savings = 100000 + income - expenses # Starting base + delta
+    current_savings = current_user.initial_balance + income - expenses
     
     # Format Transactions
     tx_list = []
@@ -60,9 +60,20 @@ def dashboard_api():
         "transactions": tx_list,
         "chart": {
             "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-            "data": [100000, 110000, 105000, 120000, 115000, current_savings]
+            "data": [current_user.initial_balance, current_user.initial_balance * 1.1, current_user.initial_balance * 1.05, current_user.initial_balance * 1.2, current_user.initial_balance * 1.15, current_savings]
         }
     })
+
+@app.route('/api/user/balance', methods=['POST'])
+@login_required
+def update_initial_balance():
+    data = request.get_json(silent=True) or {}
+    try:
+        current_user.initial_balance = float(data.get('balance', 100000.0))
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/transactions', methods=['POST'])
 @login_required

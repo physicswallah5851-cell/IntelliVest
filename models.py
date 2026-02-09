@@ -9,6 +9,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    initial_balance = db.Column(db.Float, default=100000.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

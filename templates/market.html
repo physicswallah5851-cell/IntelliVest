@@ -178,7 +178,8 @@
                 <div v-if="currentTab === 'stocks'" class="space-y-6 fade-in">
                     <!-- Ticker Tape Mockup -->
                     <div class="flex space-x-4 overflow-x-auto pb-4 no-scrollbar">
-                        <div v-for="idx in 3"
+                        <!-- SENSEX -->
+                        <div
                             class="bg-gradient-to-r from-purple-900/20 to-blue-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="font-bold text-slate-300">SENSEX</span>
@@ -186,6 +187,7 @@
                             </div>
                             <div class="text-2xl font-bold text-white">₹72,450.30</div>
                         </div>
+                        <!-- NIFTY 50 -->
                         <div
                             class="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
                             <div class="flex justify-between items-start mb-1">
@@ -193,6 +195,24 @@
                                 <span class="text-green-400 text-xs">+0.52%</span>
                             </div>
                             <div class="text-2xl font-bold text-white">₹21,850.10</div>
+                        </div>
+                        <!-- BANK NIFTY -->
+                        <div
+                            class="bg-gradient-to-r from-green-900/20 to-teal-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-300">BANK NIFTY</span>
+                                <span class="text-red-400 text-xs">-0.15%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">₹45,980.50</div>
+                        </div>
+                        <!-- NASDAQ -->
+                        <div
+                            class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-300">NASDAQ 100</span>
+                                <span class="text-green-400 text-xs">+1.10%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">$17,650.00</div>
                         </div>
                     </div>
 
