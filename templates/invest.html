@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment AI - IntelliVest</title>
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0B0E14;
+            color: #E2E8F0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <div id="app" class="flex w-full h-full" v-cloak>
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col">
+            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
+                <i class="fas fa-bolt text-2xl text-purple-500"></i>
+                <span class="ml-3 text-xl font-bold hidden lg:block">IntelliVest</span>
+            </div>
+            <nav class="flex-1 py-6 px-2 lg:px-4 space-y-2">
+                <a href="/"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-line text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Overview</span>
+                </a>
+                <a href="/market"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-bar text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Market (BSE)</span>
+                </a>
+                <a href="/budgets"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-wallet text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Budgets</span>
+                </a>
+                <a href="/invest"
+                    class="w-full flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 transition-colors">
+                    <i class="fas fa-brain text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Investment AI</span>
+                </a>
+                <button @click="showDonate = true"
+                    class="w-full flex items-center p-3 rounded-xl text-pink-400 hover:bg-pink-500/10 transition-colors">
+                    <i class="fas fa-heart text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Donate</span>
+                </button>
+            </nav>
+            <!-- Interactive Profile Sidebar -->
+            <div class="p-4 border-t border-slate-800 relative mt-auto">
+                <div @click="showProfileMenu = !showProfileMenu"
+                    class="bg-gradient-to-tr from-purple-900/20 to-blue-900/20 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
+                            {{ session.initials }}
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold">{{ session.name }}</div>
+                            <div class="text-xs text-slate-400">{{ session.user }}</div>
+                        </div>
+                        <i class="fas fa-chevron-up text-xs text-slate-500 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div v-if="showProfileMenu"
+                    class="absolute bottom-20 left-4 right-4 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden fade-in">
+                    <a href="#"
+                        class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800">
+                        <i class="fas fa-cog mr-2"></i> Settings
+                    </a>
+                    <a href="/logout"
+                        class="block px-4 py-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav
+            class="lg:hidden fixed bottom-0 inset-x-0 bg-[#0F1219] border-t border-slate-800 flex justify-around items-center h-16 z-50 px-2 safe-area-pb">
+            <a href="/" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-[10px] font-medium">Overview</span>
+            </a>
+            <a href="/?tab=simulation"
+                class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-vial text-lg"></i>
+                <span class="text-[10px] font-medium">Simulator</span>
+            </a>
+            <div class="relative -top-5">
+                <button
+                    class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/40 text-white">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+            </div>
+            <a href="/market" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-bar text-lg"></i>
+                <span class="text-[10px] font-medium">Market</span>
+            </a>
+            <button class="text-purple-400 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-brain text-lg"></i>
+                <span class="text-[10px] font-medium">AI</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full bg-[#0B0E14] overflow-hidden pb-16 lg:pb-0">
+            <div class="flex-1 overflow-y-auto p-8">
+                <div class="max-w-6xl mx-auto">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-white mb-2">Smart Investment Optimizer</h1>
+                        <p class="text-slate-400">AI-driven asset allocation based on your risk profile (PPT Module).
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Controls -->
+                        <div class="lg:col-span-4 glass-panel p-6 h-fit">
+                            <h2 class="text-xl font-bold mb-6 text-white">1. Define Your Capital</h2>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Investment
+                                        Amount (₹)</label>
+                                    <input type="number" v-model="invest.amount"
+                                        class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white text-lg font-bold"
+                                        placeholder="500000">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-4">2. Select Risk
+                                        Preference</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <button @click="setRisk('low')"
+                                            :class="{'bg-green-600 text-white': invest.risk === 'low', 'bg-slate-800 text-slate-400': invest.risk !== 'low'}"
+                                            class="p-3 rounded-lg text-sm font-bold border border-slate-700 transition-all hover:scale-105">
+                                            Low
+                                        </button>
+                                        <button @click="setRisk('medium')"
+                                            :class="{'bg-yellow-600 text-white': invest.risk === 'medium', 'bg-slate-800 text-slate-400': invest.risk !== 'medium'}"
+                                            class="p-3 rounded-lg text-sm font-bold border border-slate-700 transition-all hover:scale-105">
+                                            Medium
+                                        </button>
+                                        <button @click="setRisk('high')"
+                                            :class="{'bg-red-600 text-white': invest.risk === 'high', 'bg-slate-800 text-slate-400': invest.risk !== 'high'}"
+                                            class="p-3 rounded-lg text-sm font-bold border border-slate-700 transition-all hover:scale-105">
+                                            High
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-2">
+                                        [[ riskDescription ]]
+                                    </p>
+                                </div>
+
+                                <button @click="generatePlan"
+                                    class="w-full btn-gold py-4 rounded-xl font-bold text-black shadow-lg shadow-yellow-900/20 mt-4 flex items-center justify-center space-x-2">
+                                    <i class="fas fa-magic"></i>
+                                    <span>Generate Allocation Plan</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="lg:col-span-8 space-y-6">
+                            <!-- Allocation Chart -->
+                            <div class="glass-panel p-6">
+                                <h3 class="font-bold text-lg mb-4">3. Strategic Asset Allocation</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                    <div class="h-64 relative">
+                                        <canvas id="allocationChart"></canvas>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div v-for="(item, index) in allocation" :key="index"
+                                            class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                            <div class="flex items-center space-x-3">
+                                                <span class="w-3 h-3 rounded-full"
+                                                    :style="{backgroundColor: item.color}"></span>
+                                                <span class="font-medium">[[ item.label ]]</span>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="font-bold text-white">[[ item.percent ]]%</div>
+                                                <div class="text-xs text-slate-400">₹[[
+                                                    formatPrice(calculateAmount(item.percent)) ]]</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Growth Projection -->
+                            <div class="glass-panel p-6">
+                                <h3 class="font-bold text-lg mb-4 flex items-center space-x-2">
+                                    <i class="fas fa-chart-line text-green-400"></i>
+                                    <span>4. Projected Wealth Generation (5 Years)</span>
+                                </h3>
+                                <div class="p-4 bg-slate-900/50 rounded-xl mb-4 border border-green-500/10">
+                                    <div class="flex justify-between items-end">
+                                        <div>
+                                            <p class="text-xs text-slate-400 uppercase">Expected Value</p>
+                                            <h2 class="text-3xl font-bold text-white">₹[[ formatPrice(projectedValue) ]]
+                                            </h2>
+                                        </div>
+                                        <div class="text-green-400 font-bold text-sm">
+                                            +[[ roi ]]% ROI
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 8: Unlock Your Financial Potential -->
+                    <div class="mt-16 mb-12">
+                        <h2 class="text-3xl font-bold text-white mb-10 text-center font-serif">Unlock Your Financial
+                            Potential</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                            <div class="glass-panel p-8 hover:bg-slate-800/60 transition-colors">
+                                <div class="text-4xl font-bold text-slate-700 mb-4">1</div>
+                                <h3 class="text-xl font-bold text-white mb-3">Simplifies Investing</h3>
+                                <p class="text-slate-400 leading-relaxed">
+                                    Breaks down complex investment strategies into easy-to-understand recommendations
+                                    for beginners.
+                                </p>
+                            </div>
+
+                            <div class="glass-panel p-8 hover:bg-slate-800/60 transition-colors">
+                                <div class="text-4xl font-bold text-slate-700 mb-4">2</div>
+                                <h3 class="text-xl font-bold text-white mb-3">Mitigates Risk</h3>
+                                <p class="text-slate-400 leading-relaxed">
+                                    Reduces the likelihood of poor financial decisions by providing data-driven,
+                                    objective advice.
+                                </p>
+                            </div>
+
+                            <div class="glass-panel p-8 hover:bg-slate-800/60 transition-colors">
+                                <div class="text-4xl font-bold text-slate-700 mb-4">3</div>
+                                <h3 class="text-xl font-bold text-white mb-3">Personalized Advice</h3>
+                                <p class="text-slate-400 leading-relaxed">
+                                    Tailors recommendations to individual risk profiles (Low, Medium, High) and
+                                    investment amounts.
+                                </p>
+                            </div>
+
+                            <div class="glass-panel p-8 hover:bg-slate-800/60 transition-colors">
+                                <div class="text-4xl font-bold text-slate-700 mb-4">4</div>
+                                <h3 class="text-xl font-bold text-white mb-3">Saves Time & Effort</h3>
+                                <p class="text-slate-400 leading-relaxed">
+                                    Automates the research and analysis phase, allowing users to focus on their
+                                    long-term goals.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Slide 9: The Road Ahead -->
+                    <div class="mb-16">
+                        <h2 class="text-3xl font-bold text-white mb-10 text-center font-serif">The Road Ahead: Expanding
+                            Our Horizons</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                                <i class="fas fa-chart-line text-blue-500 text-2xl mb-4"></i>
+                                <h4 class="font-bold text-white mb-2">Real-time Market Integration</h4>
+                                <p class="text-sm text-slate-400">Incorporating live data for instant, up-to-the-minute
+                                    investment adjustments.</p>
+                            </div>
+
+                            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                                <i class="fas fa-mobile-alt text-purple-500 text-2xl mb-4"></i>
+                                <h4 class="font-bold text-white mb-2">Mobile Accessibility</h4>
+                                <p class="text-sm text-slate-400">Developing a dedicated app for seamless on-the-go
+                                    financial management.</p>
+                            </div>
+
+                            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                                <i class="fas fa-coins text-yellow-500 text-2xl mb-4"></i>
+                                <h4 class="font-bold text-white mb-2">Diverse Asset Classes</h4>
+                                <p class="text-sm text-slate-400">Adding support for Cryptocurrencies, Mutual Funds, and
+                                    other alternative investments.</p>
+                            </div>
+
+                            <div
+                                class="bg-slate-900/50 p-6 rounded-xl border border-slate-800 md:col-span-2 lg:col-span-1">
+                                <i class="fas fa-robot text-green-500 text-2xl mb-4"></i>
+                                <h4 class="font-bold text-white mb-2">Automated Execution</h4>
+                                <p class="text-sm text-slate-400">Enabling direct investment execution within the
+                                    platform (One-Click Buy).</p>
+                            </div>
+
+                            <div
+                                class="bg-slate-900/50 p-6 rounded-xl border border-slate-800 md:col-span-2 lg:col-span-2">
+                                <i class="fas fa-universal-access text-pink-500 text-2xl mb-4"></i>
+                                <h4 class="font-bold text-white mb-2">Inclusive Interface</h4>
+                                <p class="text-sm text-slate-400">Integrating voice assistance features, especially
+                                    beneficial for elderly users, making finance truly accessible to all.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Donation Modal -->
+        <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+            <div
+                class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+                <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heart text-3xl text-pink-500"></i>
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+                <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+
+                <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                        alt="Donate QR" class="w-48 h-48">
+                </div>
+
+                <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                    <div class="text-xs text-slate-400 text-left">
+                        <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                        <div class="text-white font-mono">faisal19262@oksbi</div>
+                    </div>
+                    <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                        [[ copied ? 'Copied!' : 'Copy' ]]
+                    </button>
+                </div>
+
+                <div class="mt-6 text-xs text-slate-500">
+                    Scan with GPay, PhonePe, or Paytm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    showProfileMenu: false,
+                    showDonate: false,
+                    copied: false,
+                    invest: {
+                        amount: 100000,
+                        risk: 'medium'
+                    },
+                    allocation: [],
+                    chart: null,
+                    projectedValue: 0,
+                    roi: 0
+                }
+            },
+            computed: {
+                riskDescription() {
+                    const desc = {
+                        'low': "Prioritizes capital preservation. Focuses on stable assets like FDs and Gold.",
+                        'medium': "Balanced approach seeking growth. Mix of Stocks, Real Estate, and FDs.",
+                        'high': "Aggressive growth. Heavy weightage in Stocks and dynamic assets."
+                    };
+                    return desc[this.invest.risk];
+                }
+            },
+            mounted() {
+                this.generatePlan();
+            },
+            methods: {
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
+                setRisk(level) {
+                    this.invest.risk = level;
+                    this.generatePlan();
+                },
+                formatPrice(value) {
+                    return Math.round(value).toLocaleString('en-IN');
+                },
+                calculateAmount(percent) {
+                    return (this.invest.amount * percent) / 100;
+                },
+                generatePlan() {
+                    // Logic from Slide 7 of PPT
+                    const strategies = {
+                        'low': [
+                            { label: 'Fixed Deposits (FD)', percent: 50, color: '#3B82F6', growth: 1.07 },
+                            { label: 'Gold', percent: 30, color: '#F59E0B', growth: 1.08 },
+                            { label: 'Bonds', percent: 20, color: '#10B981', growth: 1.06 }
+                        ],
+                        'medium': [
+                            { label: 'Stocks', percent: 40, color: '#8B5CF6', growth: 1.12 },
+                            { label: 'Fixed Deposits', percent: 30, color: '#3B82F6', growth: 1.07 },
+                            { label: 'Gold', percent: 20, color: '#F59E0B', growth: 1.08 },
+                            { label: 'Real Estate', percent: 10, color: '#EC4899', growth: 1.09 }
+                        ],
+                        'high': [
+                            { label: 'Stocks', percent: 60, color: '#8B5CF6', growth: 1.15 },
+                            { label: 'Real Estate', percent: 20, color: '#EC4899', growth: 1.10 },
+                            { label: 'Gold', percent: 10, color: '#F59E0B', growth: 1.08 },
+                            { label: 'Crypto/Alt', percent: 10, color: '#EF4444', growth: 1.25 }
+                        ]
+                    };
+
+                    this.allocation = strategies[this.invest.risk];
+                    this.updateChart();
+                    this.calculateProjection();
+                },
+                calculateProjection() {
+                    // Simple CI calculation for 5 years
+                    let total = 0;
+                    this.allocation.forEach(asset => {
+                        const principal = this.calculateAmount(asset.percent);
+                        const amount = principal * Math.pow(asset.growth, 5);
+                        total += amount;
+                    });
+                    this.projectedValue = total;
+                    this.roi = Math.round(((total - this.invest.amount) / this.invest.amount) * 100);
+                },
+                updateChart() {
+                    if (this.chart) this.chart.destroy();
+                    const ctx = document.getElementById('allocationChart').getContext('2d');
+
+                    this.chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: this.allocation.map(x => x.label),
+                            datasets: [{
+                                data: this.allocation.map(x => x.percent),
+                                backgroundColor: this.allocation.map(x => x.color),
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            cutout: '70%'
+                        }
+                    });
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+
+</html>

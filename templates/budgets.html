@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgets - IntelliVest</title>
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0B0E14;
+            color: #E2E8F0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <div id="app" class="flex w-full h-full" v-cloak>
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col">
+            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
+                <i class="fas fa-bolt text-2xl text-purple-500"></i>
+                <span class="ml-3 text-xl font-bold hidden lg:block">IntelliVest</span>
+            </div>
+            <nav class="flex-1 py-6 px-2 lg:px-4 space-y-2">
+                <a href="/"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-line text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Overview</span>
+                </a>
+                <a href="/market"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-bar text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Market (BSE)</span>
+                </a>
+                <a href="/budgets"
+                    class="w-full flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 transition-colors">
+                    <i class="fas fa-wallet text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Budgets</span>
+                </a>
+                <a href="/invest"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-brain text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Investment AI</span>
+                </a>
+                <button @click="showDonate = true"
+                    class="w-full flex items-center p-3 rounded-xl text-pink-400 hover:bg-pink-500/10 transition-colors">
+                    <i class="fas fa-heart text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Donate</span>
+                </button>
+            </nav>
+            <!-- Interactive Profile Sidebar -->
+            <div class="p-4 border-t border-slate-800 relative mt-auto">
+                <div @click="showProfileMenu = !showProfileMenu"
+                    class="bg-gradient-to-tr from-purple-900/20 to-blue-900/20 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
+                            {{ session.initials }}
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold">{{ session.name }}</div>
+                            <div class="text-xs text-slate-400">{{ session.user }}</div>
+                        </div>
+                        <i class="fas fa-chevron-up text-xs text-slate-500 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div v-if="showProfileMenu"
+                    class="absolute bottom-20 left-4 right-4 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden fade-in">
+                    <a href="#"
+                        class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800">
+                        <i class="fas fa-cog mr-2"></i> Settings
+                    </a>
+                    <a href="/logout"
+                        class="block px-4 py-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav
+            class="lg:hidden fixed bottom-0 inset-x-0 bg-[#0F1219] border-t border-slate-800 flex justify-around items-center h-16 z-50 px-2 safe-area-pb">
+            <a href="/" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-[10px] font-medium">Overview</span>
+            </a>
+            <a href="/?tab=simulation"
+                class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-vial text-lg"></i>
+                <span class="text-[10px] font-medium">Simulator</span>
+            </a>
+            <div class="relative -top-5">
+                <button @click="addBudget"
+                    class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/40 text-white">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+            </div>
+            <a href="/market" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-bar text-lg"></i>
+                <span class="text-[10px] font-medium">Market</span>
+            </a>
+            <a href="/invest" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-brain text-lg"></i>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full bg-[#0B0E14] relative overflow-hidden pb-16 lg:pb-0">
+            <header
+                class="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-[#0B0E14]/80 backdrop-blur-md z-10 sticky top-0">
+                <h1 class="text-2xl font-bold text-white">Smart Budgets</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden md:block">
+                        <div class="text-sm font-bold text-white">Total Budget</div>
+                        <div class="text-xs text-slate-400">₹3,500 / ₹4,000</div>
+                    </div>
+                    <button @click="addBudget"
+                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-medium transition-colors">
+                        + New Category
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 relative">
+                <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div v-for="budget in budgets" :key="budget.id"
+                        class="glass-panel p-6 transform hover:scale-[1.02] transition-transform duration-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+                                    <i :class="budget.icon" :style="{color: budget.color}" class="text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-white">[[ budget.name ]]</h3>
+                                    <p class="text-xs text-slate-400">[[ budget.transactions ]] transactions</p>
+                                </div>
+                            </div>
+                            <button class="text-slate-500 hover:text-white"><i class="fas fa-ellipsis-v"></i></button>
+                        </div>
+
+                        <div class="mb-2 flex justify-between text-sm">
+                            <span class="text-slate-300 font-medium">₹[[ budget.spent ]] spent</span>
+                            <span class="text-slate-500">of ₹[[ budget.limit ]]</span>
+                        </div>
+
+                        <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden mb-4">
+                            <div class="h-full rounded-full"
+                                :style="{width: (budget.spent / budget.limit * 100) + '%', backgroundColor: budget.color}">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center space-x-1 text-slate-400">
+                                <i class="fas fa-history"></i>
+                                <span>Resets in 12 days</span>
+                            </div>
+                            <div v-if="budget.spent > budget.limit"
+                                class="px-2 py-1 bg-red-500/20 text-red-400 rounded-md font-bold">
+                                Over Budget
+                            </div>
+                            <div v-else class="px-2 py-1 bg-green-500/20 text-green-400 rounded-md font-bold">
+                                On Track
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+        <!-- Donation Modal -->
+        <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+            <div
+                class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+                <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heart text-3xl text-pink-500"></i>
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+                <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+
+                <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                        alt="Donate QR" class="w-48 h-48">
+                </div>
+
+                <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                    <div class="text-xs text-slate-400 text-left">
+                        <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                        <div class="text-white font-mono">faisal19262@oksbi</div>
+                    </div>
+                    <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                        [[ copied ? 'Copied!' : 'Copy' ]]
+                    </button>
+                </div>
+
+                <div class="mt-6 text-xs text-slate-500">
+                    Scan with GPay, PhonePe, or Paytm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    showProfileMenu: false,
+                    showDonate: false,
+                    copied: false,
+                    budgets: []
+                }
+            },
+            mounted() {
+                this.fetchData();
+            },
+            methods: {
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
+                async fetchData() {
+                    const res = await fetch('/api/budgets');
+                    this.budgets = await res.json();
+                },
+                addBudget() {
+                    alert("Feature coming soon!");
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+
+</html>

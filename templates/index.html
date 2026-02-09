@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliVest - Smart Financial Intelligence</title>
+
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Tailwind CSS (Critical) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Vue.js (Critical for UI) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Deferred Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0B0E14;
+            color: #E2E8F0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <div id="app" class="flex w-full h-full">
+
+        <!-- Sidebar (Desktop and Tablet) -->
+        <aside
+            class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col transition-all duration-300">
+            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
+                <i class="fas fa-bolt text-2xl text-purple-500"></i>
+                <span class="ml-3 text-xl font-bold hidden lg:block tracking-wide">IntelliVest</span>
+            </div>
+
+            <nav class="flex-1 py-6 px-2 lg:px-4 space-y-2">
+                <button @click="currentTab = 'dashboard'"
+                    :class="{'bg-purple-500/10 text-purple-400': currentTab === 'dashboard', 'text-slate-400 hover:bg-slate-800': currentTab !== 'dashboard'}"
+                    class="w-full flex items-center p-3 rounded-xl transition-colors">
+                    <i class="fas fa-chart-line text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Overview</span>
+                </button>
+                <button @click="currentTab = 'simulation'"
+                    :class="{'bg-purple-500/10 text-purple-400': currentTab === 'simulation', 'text-slate-400 hover:bg-slate-800': currentTab !== 'simulation'}"
+                    class="w-full flex items-center p-3 rounded-xl transition-colors">
+                    <i class="fas fa-vial text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Simulator</span>
+                </button>
+                <a href="/market"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-bar text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Market (BSE)</span>
+                </a>
+                <a href="/budgets"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-wallet text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Budgets</span>
+                </a>
+                <a href="/invest"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-brain text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Investment AI</span>
+                </a>
+                <button @click="showDonate = true"
+                    class="w-full flex items-center p-3 rounded-xl text-pink-400 hover:bg-pink-500/10 transition-colors">
+                    <i class="fas fa-heart text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Donate</span>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 relative">
+                <div @click="showProfileMenu = !showProfileMenu"
+                    class="bg-gradient-to-tr from-purple-900/20 to-blue-900/20 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
+                            {{ session.initials }}</div>
+                        <div>
+                            <div class="text-sm font-semibold">{{ session.name }}</div>
+                            <div class="text-xs text-slate-400">{{ session.user }}</div>
+                        </div>
+                        <i class="fas fa-chevron-up text-xs text-slate-500 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div v-if="showProfileMenu"
+                    class="absolute bottom-20 left-4 right-4 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden fade-in">
+                    <a href="#"
+                        class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800">
+                        <i class="fas fa-cog mr-2"></i> Settings
+                    </a>
+                    <a href="/logout"
+                        class="block px-4 py-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav
+            class="lg:hidden fixed bottom-0 inset-x-0 bg-[#0F1219] border-t border-slate-800 flex justify-around items-center h-16 z-50 px-2 safe-area-pb">
+            <button @click="currentTab = 'dashboard'"
+                :class="currentTab === 'dashboard' ? 'text-purple-400' : 'text-slate-500'"
+                class="flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-[10px] font-medium">Overview</span>
+            </button>
+            <button @click="currentTab = 'simulation'"
+                :class="currentTab === 'simulation' ? 'text-purple-400' : 'text-slate-500'"
+                class="flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-vial text-lg"></i>
+                <span class="text-[10px] font-medium">Simulator</span>
+            </button>
+            <div class="relative -top-5">
+                <button @click="showNewModal = true"
+                    class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/40 text-white">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+            </div>
+            <a href="/market" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-bar text-lg"></i>
+                <span class="text-[10px] font-medium">Market</span>
+            </a>
+            <a href="/invest" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-brain text-lg"></i>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full bg-[#0B0E14] relative overflow-hidden pb-16 lg:pb-0">
+            <!-- Top Bar -->
+            <header
+                class="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-[#0B0E14]/80 backdrop-blur-md z-10 sticky top-0">
+                <div>
+                    <h1 class="text-2xl font-bold text-white capitalize flex items-center">
+                        <i class="fas fa-bolt text-purple-500 mr-2 lg:hidden"></i>
+                        [[ currentTab ]]
+                        <span class="text-xs text-purple-400 bg-purple-900/20 px-2 py-1 rounded-full ml-2">v2.1
+                            INR</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden lg:block">Real-time financial intelligence</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button @click="showNotifications = !showNotifications"
+                        class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors relative">
+                        <i class="far fa-bell text-slate-400"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div v-if="showNotifications"
+                        class="absolute top-16 right-4 w-80 bg-slate-900 rounded-xl border border-slate-700 shadow-2xl z-50 p-4 fade-in transform origin-top-right">
+                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
+                            <h4 class="font-bold text-white text-sm">Notifications</h4>
+                            <button @click="showNotifications = false"
+                                class="text-slate-400 hover:text-white transition-colors">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <div
+                                class="flex items-start space-x-3 p-2 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer group">
+                                <div
+                                    class="bg-blue-500/20 p-2 rounded-lg text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                                    <i class="fas fa-rocket text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-sm">SIP Deducted</p>
+                                    <div class="text-slate-400 text-xs mt-0.5">₹5,000 invested in Nifty 50.</div>
+                                </div>
+                            </div>
+                            <div
+                                class="flex items-start space-x-3 p-2 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer group">
+                                <div
+                                    class="bg-red-500/20 p-2 rounded-lg text-red-400 group-hover:bg-red-500/30 transition-colors">
+                                    <i class="fas fa-exclamation-triangle text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-sm">Over Budget</p>
+                                    <div class="text-slate-400 text-xs mt-0.5">You exceeded your Dining limit.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="showNewModal = true"
+                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-medium transition-colors">
+                        + New
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scroll Area -->
+            <div class="flex-1 overflow-y-auto p-8 relative">
+
+                <!-- Dashboard View -->
+                <div v-show="currentTab === 'dashboard'" class="max-w-6xl mx-auto space-y-8 fade-in">
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-panel p-6 relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-purple-500/30">
+                            </div>
+                            <p class="text-slate-400 text-sm mb-1">Total Balance</p>
+                            <h2 class="text-4xl font-bold text-white mb-2">[[ formatPrice(data.balance) ]]</h2>
+                            <div class="flex items-center text-green-400 text-sm font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i> 12.5% vs last month
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6">
+                            <p class="text-slate-400 text-sm mb-1">Monthly Burn</p>
+                            <h2 class="text-4xl font-bold text-white mb-2">[[ formatPrice(data.expenses) ]]</h2>
+                            <div class="flex items-center text-red-400 text-sm font-medium">
+                                <i class="fas fa-arrow-down mr-1"></i> 2.1% efficiency drop
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 border-l-4 border-l-purple-500">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <i class="fas fa-brain text-purple-400"></i>
+                                <span class="text-slate-300 font-semibold text-sm uppercase tracking-wide">AI
+                                    Insight</span>
+                            </div>
+                            <p class="text-sm text-slate-300 leading-relaxed">
+                                "Your spending on 'Dining' is high. Starting a <span class="text-white font-bold">₹5,000
+                                    SIP</span> in a Nifty 50 fund could yield <span class="text-green-400">₹8.5
+                                    Lakhs</span> over 10 years."
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chart Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-panel p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-semibold text-lg">Net Worth History</h3>
+                                <div class="flex space-x-2">
+                                    <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                                    <span class="text-xs text-slate-400">Cash Flow</span>
+                                </div>
+                            </div>
+                            <div class="h-64 w-full">
+                                <canvas id="mainChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recent Transactions -->
+                        <div class="glass-panel p-6 flex flex-col">
+                            <h3 class="font-semibold text-lg mb-4">Recent Activity</h3>
+                            <div class="flex-1 space-y-4 overflow-y-auto custom-scrollbar">
+                                <div v-for="tx in data.transactions" :key="tx.id"
+                                    class="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                                    <div class="flex items-center space-x-3">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
+                                            <i :class="getIcon(tx.cat)" class="text-slate-400 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-sm">[[ tx.desc ]]</div>
+                                            <div class="text-xs text-slate-500">[[ tx.date ]]</div>
+                                        </div>
+                                    </div>
+                                    <div :class="tx.amt > 0 ? 'text-green-400' : 'text-white'"
+                                        class="font-bold text-sm">
+                                        [[ tx.amt > 0 ? '+' : '' ]]₹[[ Math.abs(tx.amt).toFixed(2) ]]
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulator View -->
+                <div v-show="currentTab === 'simulation'"
+                    class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 fade-in">
+                    <!-- Controls -->
+                    <div class="lg:col-span-4 glass-panel p-8 h-fit">
+                        <h2 class="text-xl font-bold mb-6 flex items-center space-x-2">
+                            <i class="fas fa-sliders-h text-purple-500"></i>
+                            <span>Parameters</span>
+                        </h2>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Upfront
+                                    Cost</label>
+                                <input type="range" v-model.number="sim.cost" min="0" max="50000" step="1000"
+                                    class="w-full accent-purple-500 mb-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-slate-600">₹0</span>
+                                    <span class="text-lg font-bold text-white">[[ formatPrice(sim.cost) ]]</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Monthly
+                                    Payment</label>
+                                <input type="range" v-model.number="sim.monthly" min="0" max="25000" step="500"
+                                    class="w-full accent-blue-500 mb-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-slate-600">₹0</span>
+                                    <span class="text-lg font-bold text-white">[[ formatPrice(sim.monthly) ]]</span>
+                                </div>
+                            </div>
+
+                            <button @click="runSimulation"
+                                class="w-full btn-primary py-3 rounded-xl font-bold text-white shadow-lg shadow-purple-900/20 mt-4">
+                                <i class="fas fa-play mr-2"></i> Run Simulation
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="lg:col-span-8 glass-panel p-8 relative min-h-[500px] flex flex-col">
+                        <div v-if="!sim.results"
+                            class="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+                            <i class="fas fa-chart-area text-6xl mb-4 opacity-20"></i>
+                            <p>Adjust parameters and run simulation</p>
+                        </div>
+
+                        <div v-else class="fade-in flex flex-col h-full">
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <h3 class="text-lg font-bold">Projected Impact (1 Year)</h3>
+                                    <p class="text-sm text-slate-400">Comparing current trajectory vs. scenario</p>
+                                </div>
+                                <div :class="sim.results.status === 'safe' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'"
+                                    class="px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider">
+                                    [[ sim.results.status ]]
+                                </div>
+                            </div>
+
+                            <div class="flex-1 w-full bg-slate-900/50 rounded-xl mb-6 p-4">
+                                <canvas id="simChart"></canvas>
+                            </div>
+
+                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-robot text-blue-400 mt-1"></i>
+                                    <div>
+                                        <div class="text-xs font-bold text-blue-400 uppercase mb-1">AI Advisor Says
+                                        </div>
+                                        <p class="text-sm text-slate-300 leading-relaxed">[[ sim.results.advice ]]</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- New Transaction Modal -->
+            <div v-if="showNewModal"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center fade-in">
+                <div class="glass-panel p-8 w-full max-w-lg relative">
+                    <button @click="showNewModal = false"
+                        class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold mb-6">Add Transaction</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Description</label>
+                            <input type="text" placeholder="e.g. Salary, Rent"
+                                class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Amount (₹)</label>
+                                <input type="number" placeholder="0.00"
+                                    class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Category</label>
+                                <select class="w-full bg-slate-800 rounded-lg p-3 text-white border border-slate-700">
+                                    <option>Food & Dining</option>
+                                    <option>Travel</option>
+                                    <option>SIP/Investment</option>
+                                    <option>Utilities</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button @click="showNewModal = false"
+                            class="w-full btn-primary py-3 rounded-xl font-bold text-white mt-4">
+                            Save Transaction
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donation Modal -->
+            <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+                <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+                <div
+                    class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+                    <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+
+                    <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-3xl text-pink-500"></i>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+                    <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+
+                    <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                            alt="Donate QR" class="w-48 h-48">
+                    </div>
+
+                    <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                        <div class="text-xs text-slate-400 text-left">
+                            <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                            <div class="text-white font-mono">faisal19262@oksbi</div>
+                        </div>
+                        <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                            [[ copied ? 'Copied!' : 'Copy' ]]
+                        </button>
+                    </div>
+
+                    <div class="mt-6 text-xs text-slate-500">
+                        Scan with GPay, PhonePe, or Paytm
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    currentTab: 'dashboard',
+                    data: {
+                        balance: 0,
+                        expenses: 0,
+                        transactions: [],
+                        chart: { labels: [], data: [] }
+                    },
+                    sim: {
+                        cost: 15000,
+                        monthly: 450,
+                        results: null
+                    },
+                    charts: {
+                        main: null,
+                        sim: null
+                    },
+                    showNotifications: false,
+                    showNewModal: false,
+                    showDonate: false,
+                    copied: false
+                }
+            },
+            mounted() {
+                this.fetchData();
+            },
+            methods: {
+                async fetchData() {
+                    try {
+                        const res = await fetch('/api/dashboard');
+
+                        // Check if response is JSON (API data) or HTML (Redirect to Login)
+                        const contentType = res.headers.get("content-type");
+                        if (contentType && contentType.indexOf("application/json") === -1) {
+                            // Not JSON? Likely a redirect to login.
+                            window.location.href = '/login';
+                            return;
+                        }
+
+                        if (!res.ok) throw new Error('API Error');
+
+                        this.data = await res.json();
+                        this.$nextTick(() => {
+                            this.initMainChart();
+                        });
+                    } catch (e) {
+                        console.error("Dashboard fetch failed:", e);
+                        alert("Failed to load dashboard data. Please log in again.");
+                        window.location.href = '/login';
+                    }
+                },
+                formatPrice(value) {
+                    return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+                },
+                getIcon(cat) {
+                    const icons = {
+                        'Food': 'fas fa-utensils',
+                        'Subs': 'fas fa-tv',
+                        'Income': 'fas fa-money-bill-wave',
+                        'Transport': 'fas fa-car',
+                        'Rent': 'fas fa-home'
+                    };
+                    return icons[cat] || 'fas fa-receipt';
+                },
+                initMainChart() {
+                    if (this.charts.main) this.charts.main.destroy();
+                    const ctx = document.getElementById('mainChart').getContext('2d');
+
+                    // Create gradient
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(124, 58, 237, 0.5)'); // Purple
+                    gradient.addColorStop(1, 'rgba(124, 58, 237, 0.0)');
+
+                    this.charts.main = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: this.data.chart.labels,
+                            datasets: [{
+                                label: 'Net Worth',
+                                data: this.data.chart.data,
+                                borderColor: '#8B5CF6',
+                                backgroundColor: gradient,
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#8B5CF6',
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                            scales: {
+                                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } },
+                                x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                            },
+                            interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                        }
+                    });
+                },
+                async runSimulation() {
+                    console.log("Running simulation...");
+                    const res = await fetch('/api/simulation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cost: this.sim.cost, monthly: this.sim.monthly })
+                    });
+                    this.sim.results = await res.json();
+
+                    this.$nextTick(() => {
+                        this.initSimChart();
+                    });
+                },
+                initSimChart() {
+                    const ctx = document.getElementById('simChart').getContext('2d');
+                    if (this.charts.sim) this.charts.sim.destroy();
+
+                    this.charts.sim = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: this.sim.results.labels,
+                            datasets: [
+                                {
+                                    label: 'Current Path',
+                                    data: this.sim.results.base_trend,
+                                    borderColor: '#22C55E', // Green
+                                    borderDash: [5, 5],
+                                    borderWidth: 2,
+                                    pointRadius: 0,
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'New Scenario',
+                                    data: this.sim.results.sim_trend,
+                                    borderColor: '#EF4444', // Red
+                                    borderWidth: 3,
+                                    tension: 0.4,
+                                    pointBackgroundColor: '#EF4444'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: '#CBD5E1' } } },
+                            scales: {
+                                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } },
+                                x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                            }
+                        }
+                    });
+                },
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                }
+            }
+        }).mount('#app')
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+
+</html>

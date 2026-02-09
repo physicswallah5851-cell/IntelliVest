@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market - IntelliVest</title>
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0B0E14;
+            color: #E2E8F0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        .text-up {
+            color: #10B981;
+        }
+
+        .text-down {
+            color: #EF4444;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <div id="app" class="flex w-full h-full" v-cloak>
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col">
+            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
+                <i class="fas fa-bolt text-2xl text-purple-500"></i>
+                <span class="ml-3 text-xl font-bold hidden lg:block">IntelliVest</span>
+            </div>
+            <nav class="flex-1 py-6 px-2 lg:px-4 space-y-2">
+                <a href="/"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-line text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Overview</span>
+                </a>
+                <a href="/market"
+                    class="w-full flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 transition-colors">
+                    <i class="fas fa-chart-bar text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Market (BSE)</span>
+                </a>
+                <a href="/budgets"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-wallet text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Budgets</span>
+                </a>
+                <a href="/invest"
+                    class="w-full flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-brain text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Investment AI</span>
+                </a>
+                <button @click="showDonate = true"
+                    class="w-full flex items-center p-3 rounded-xl text-pink-400 hover:bg-pink-500/10 transition-colors">
+                    <i class="fas fa-heart text-lg w-8 text-center"></i>
+                    <span class="font-medium hidden lg:block">Donate</span>
+                </button>
+            </nav>
+            <!-- Interactive Profile Sidebar -->
+            <div class="p-4 border-t border-slate-800 relative mt-auto">
+                <div @click="showProfileMenu = !showProfileMenu"
+                    class="bg-gradient-to-tr from-purple-900/20 to-blue-900/20 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
+                            {{ session.initials }}
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold">{{ session.name }}</div>
+                            <div class="text-xs text-slate-400">{{ session.user }}</div>
+                        </div>
+                        <i class="fas fa-chevron-up text-xs text-slate-500 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div v-if="showProfileMenu"
+                    class="absolute bottom-20 left-4 right-4 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden fade-in">
+                    <a href="#"
+                        class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800">
+                        <i class="fas fa-cog mr-2"></i> Settings
+                    </a>
+                    <a href="/logout"
+                        class="block px-4 py-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav
+            class="lg:hidden fixed bottom-0 inset-x-0 bg-[#0F1219] border-t border-slate-800 flex justify-around items-center h-16 z-50 px-2 safe-area-pb">
+            <a href="/" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-[10px] font-medium">Overview</span>
+            </a>
+            <a href="/?tab=simulation"
+                class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-vial text-lg"></i>
+                <span class="text-[10px] font-medium">Simulator</span>
+            </a>
+            <div class="relative -top-5">
+                <button
+                    class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/40 text-white">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+            </div>
+            <button class="text-purple-400 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-chart-bar text-lg"></i>
+                <span class="text-[10px] font-medium">Market</span>
+            </button>
+            <a href="/invest" class="text-slate-500 flex flex-col items-center justify-center space-y-1 w-full h-full">
+                <i class="fas fa-brain text-lg"></i>
+                <span class="text-[10px] font-medium">AI</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full bg-[#0B0E14] overflow-hidden pb-16 lg:pb-0">
+            <header
+                class="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-[#0B0E14]/80 backdrop-blur-md z-10 sticky top-0">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Indian Market Tracker</h1>
+                    <p class="text-xs text-slate-400">Live BSE Data & Sovereign Bonds</p>
+                </div>
+                <!-- Search Mockup -->
+                <div class="relative w-96 hidden md:block">
+                    <i class="fas fa-search absolute left-3 top-3 text-slate-500"></i>
+                    <input v-model="searchQuery" type="text" placeholder="Search BSE Scrip (e.g., RELIANCE, 500325)..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-purple-500 text-sm">
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8">
+                <!-- Market Tabs -->
+                <div class="flex space-x-6 mb-8 border-b border-slate-800 pb-4">
+                    <button @click="currentTab = 'stocks'"
+                        :class="{'text-white border-b-2 border-purple-500': currentTab === 'stocks', 'text-slate-400': currentTab !== 'stocks'}"
+                        class="pb-2 font-bold transition-all">
+                        <i class="fas fa-building mr-2"></i> BSE Stocks
+                    </button>
+                    <button @click="currentTab = 'bonds'"
+                        :class="{'text-white border-b-2 border-green-500': currentTab === 'bonds', 'text-slate-400': currentTab !== 'bonds'}"
+                        class="pb-2 font-bold transition-all">
+                        <i class="fas fa-university mr-2"></i> Sovereign Bonds (SGB/G-Sec)
+                    </button>
+                </div>
+
+                <!-- Stocks Section -->
+                <div v-if="currentTab === 'stocks'" class="space-y-6 fade-in">
+                    <!-- Ticker Tape Mockup -->
+                    <div class="flex space-x-4 overflow-x-auto pb-4 no-scrollbar">
+                        <div v-for="idx in 3"
+                            class="bg-gradient-to-r from-purple-900/20 to-blue-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-300">SENSEX</span>
+                                <span class="text-green-400 text-xs">+0.45%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">₹72,450.30</div>
+                        </div>
+                        <div
+                            class="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 px-6 py-3 rounded-xl border border-slate-700 flex-shrink-0 min-w-[200px]">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-300">NIFTY 50</span>
+                                <span class="text-green-400 text-xs">+0.52%</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">₹21,850.10</div>
+                        </div>
+                    </div>
+
+                    <!-- Stock List (Desktop Table) -->
+                    <div class="glass-panel overflow-hidden hidden lg:block">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 bg-slate-900/50">
+                                    <th class="p-4">Symbol</th>
+                                    <th class="p-4">Company Name</th>
+                                    <th class="p-4 text-right">Price (₹)</th>
+                                    <th class="p-4 text-right">Change</th>
+                                    <th class="p-4 text-center">Chart</th>
+                                    <th class="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="stock in filteredStocks" :key="stock.code"
+                                    class="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                                    <td class="p-4 font-bold text-white">[[ stock.symbol ]]</td>
+                                    <td class="p-4 text-slate-300">[[ stock.name ]]</td>
+                                    <td class="p-4 text-right text-white font-mono">[[ formatPrice(stock.price) ]]</td>
+                                    <td class="p-4 text-right font-mono"
+                                        :class="stock.change > 0 ? 'text-up' : 'text-down'">
+                                        [[ stock.change > 0 ? '+' : '' ]][[ stock.change ]]%
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="h-8 w-24 mx-auto bg-slate-800 rounded relative overflow-hidden">
+                                            <div class="absolute bottom-0 left-0 right-0 opacity-50 h-full"
+                                                :class="stock.change > 0 ? 'bg-green-500/20' : 'bg-red-500/20'"></div>
+                                            <!-- Mock Mini Chart Line -->
+                                            <svg class="w-full h-full" preserveAspectRatio="none">
+                                                <path :d="stock.chartPath" fill="none"
+                                                    :stroke="stock.change > 0 ? '#10B981' : '#EF4444'"
+                                                    stroke-width="2" />
+                                            </svg>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <button @click="toggleTrack(stock)"
+                                            :class="stock.tracked ? 'bg-green-500 text-white' : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'"
+                                            class="px-3 py-1 rounded-lg text-sm transition-all w-24">
+                                            [[ stock.tracked ? 'Tracking' : 'Track' ]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Stock List (Mobile Cards - Groww Style) -->
+                    <div class="lg:hidden space-y-3">
+                        <div v-for="stock in filteredStocks" :key="stock.code"
+                            class="bg-[#1E293B]/40 p-4 rounded-xl border border-slate-800/50 flex justify-between items-center active:bg-slate-800 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                                    [[ stock.symbol.substring(0, 1) ]]
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white text-base">[[ stock.symbol ]]</div>
+                                    <div class="text-[10px] text-slate-400 uppercase tracking-wide">[[
+                                        stock.name.split(' ')[0] ]]</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-white text-base">[[ formatPrice(stock.price) ]]</div>
+                                <div class="text-xs font-bold flex items-center justify-end"
+                                    :class="stock.change > 0 ? 'text-green-400' : 'text-red-400'">
+                                    <i :class="stock.change > 0 ? 'fa-arrow-up' : 'fa-arrow-down'"
+                                        class="mr-1 text-[10px]"></i>
+                                    [[ Math.abs(stock.change).toFixed(2) ]]%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Notification -->
+                <div v-if="toast.show"
+                    class="fixed bottom-8 right-8 bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-2xl flex items-center space-x-3 fade-in z-50">
+                    <div class="bg-green-500/20 p-2 rounded-full text-green-400">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white">Success</h4>
+                        <p class="text-sm text-slate-400">[[ toast.message ]]</p>
+                    </div>
+                </div>
+
+                <!-- Bonds Section -->
+                <div v-if="currentTab === 'bonds'" class="space-y-6 fade-in">
+                    <div class="p-6 bg-yellow-900/20 border border-yellow-700/30 rounded-xl flex items-start space-x-4">
+                        <i class="fas fa-certificate text-3xl text-yellow-500 mt-1"></i>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Why Sovereign Bonds?</h3>
+                            <p class="text-slate-400 text-sm leading-relaxed">Sovereign Gold Bonds (SGB) and Government
+                                Securities (G-Secs) are backed by the Government of India. They offer <strong>2.5% fixed
+                                    interest</strong> (SGB) plus capital appreciation, making them the safest risk-free
+                                assets.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel overflow-hidden hidden lg:block">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 bg-slate-900/50">
+                                    <th class="p-4">Instrument</th>
+                                    <th class="p-4">Type</th>
+                                    <th class="p-4 text-right">Coupon Rate</th>
+                                    <th class="p-4 text-right">LTP (₹)</th>
+                                    <th class="p-4 text-right">YTM (Yield)</th>
+                                    <th class="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="bond in bonds"
+                                    class="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                                    <td class="p-4">
+                                        <div class="font-bold text-white">[[ bond.name ]]</div>
+                                        <div class="text-xs text-slate-500">Maturity: [[ bond.maturity ]]</div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="px-2 py-1 rounded-md text-xs font-bold"
+                                            :class="bond.type === 'SGB' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'">
+                                            [[ bond.type ]]
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-right text-slate-300">[[ bond.coupon ]]</td>
+                                    <td class="p-4 text-right text-white font-mono">[[ formatPrice(bond.price) ]]</td>
+                                    <td class="p-4 text-right text-green-400 font-bold">[[ bond.yield ]]%</td>
+                                    <td class="p-4">
+                                        <button
+                                            class="px-3 py-1 bg-slate-700 hover:bg-white hover:text-black text-white rounded-lg text-sm transition-all">Buy</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bonds List (Mobile Cards - Groww Style) -->
+                    <div class="lg:hidden space-y-3">
+                        <div v-for="bond in bonds"
+                            class="bg-[#1E293B]/40 p-4 rounded-xl border border-slate-800/50 active:bg-slate-800 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <div class="font-bold text-white text-sm">[[ bond.name ]]</div>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold mt-1 inline-block"
+                                        :class="bond.type === 'SGB' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'">
+                                        [[ bond.type ]]
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-white text-base">[[ formatPrice(bond.price) ]]</div>
+                                    <div class="text-xs text-green-400 font-bold">YTM [[ bond.yield ]]%</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-slate-700/50 mt-2">
+                                <div class="text-xs text-slate-500">Matures: [[ bond.maturity ]]</div>
+                                <div class="text-xs text-slate-300">Coupon: <strong>[[ bond.coupon ]]</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+        <!-- Donation Modal -->
+        <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+            <div
+                class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+                <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heart text-3xl text-pink-500"></i>
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+                <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+
+                <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                        alt="Donate QR" class="w-48 h-48">
+                </div>
+
+                <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                    <div class="text-xs text-slate-400 text-left">
+                        <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                        <div class="text-white font-mono">faisal19262@oksbi</div>
+                    </div>
+                    <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                        [[ copied ? 'Copied!' : 'Copy' ]]
+                    </button>
+                </div>
+
+                <div class="mt-6 text-xs text-slate-500">
+                    Scan with GPay, PhonePe, or Paytm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    currentTab: 'stocks',
+                    showProfileMenu: false,
+                    showDonate: false,
+                    copied: false,
+                    searchQuery: '',
+                    stocks: [
+                        { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', price: 2950.45, change: 1.25, chartPath: 'M0 25 Q 10 20, 24 28 T 50 15 T 100 5' },
+                        { symbol: 'TCS', name: 'Tata Consultancy Services', price: 4120.30, change: -0.45, chartPath: 'M0 5 Q 25 10, 50 20 T 100 28' },
+                        { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', price: 1450.80, change: 0.15, chartPath: 'M0 20 Q 25 25, 50 15 T 100 10' },
+                        { symbol: 'INFY', name: 'Infosys Ltd', price: 1680.50, change: 2.10, chartPath: 'M0 28 Q 25 20, 50 10 T 100 2' },
+                        { symbol: 'TITAN', name: 'Titan Company Ltd', price: 3750.60, change: 0.85, chartPath: 'M0 20 Q 25 15, 50 18 T 100 8' },
+                        { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', price: 980.25, change: 3.40, chartPath: 'M0 30 L 20 20 L 40 25 L 100 2' },
+                        { symbol: 'SBIN', name: 'State Bank of India', price: 760.15, change: -1.10, chartPath: 'M0 5 L 30 15 L 60 10 L 100 28' },
+                        { symbol: 'ASIANPAINT', name: 'Asian Paints Ltd', price: 2890.00, change: -0.20, chartPath: 'M0 15 L 50 15 L 100 18' },
+                        { symbol: 'ITC', name: 'ITC Ltd', price: 435.50, change: 0.05, chartPath: 'M0 15 Q 50 15, 100 14' },
+                        { symbol: 'BAJFINANCE', name: 'Bajaj Finance Ltd', price: 6540.90, change: 1.80, chartPath: 'M0 25 Q 25 28, 50 10 T 100 5' }
+                    ],
+                    bonds: [
+                        { name: 'SGB 2023-24 Series IV', type: 'SGB', maturity: 'Feb 2032', coupon: '2.50%', price: 6250.00, yield: 2.85 },
+                        { name: '7.18% GS 2033', type: 'G-Sec', maturity: 'Aug 2033', coupon: '7.18%', price: 100.45, yield: 7.12 },
+                        { name: '7.18% GS 2037', type: 'G-Sec', maturity: 'Jul 2037', coupon: '7.18%', price: 99.80, yield: 7.20 },
+                        { name: 'SGB 2016-17 Series I', type: 'SGB', maturity: 'Aug 2024', coupon: '2.75%', price: 6180.00, yield: 3.10 },
+                        { name: '7.30% GS 2053', type: 'G-Sec', maturity: 'Jun 2053', coupon: '7.30%', price: 101.20, yield: 7.19 }
+                    ],
+                    toast: { show: false, message: '' }
+                }
+            },
+            computed: {
+                filteredStocks() {
+                    if (!this.searchQuery) return this.stocks;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.stocks.filter(s =>
+                        s.symbol.toLowerCase().includes(q) ||
+                        s.name.toLowerCase().includes(q)
+                    );
+                }
+            },
+            methods: {
+                copyUPI() {
+                    navigator.clipboard.writeText('faisal19262@oksbi');
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 2000);
+                },
+                formatPrice(value) {
+                    return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+                },
+                toggleTrack(stock) {
+                    stock.tracked = !stock.tracked;
+                    this.showToast(stock.tracked ? `Added ${stock.symbol} to Watchlist` : `Removed ${stock.symbol} from Watchlist`);
+                },
+                showToast(msg) {
+                    this.toast.message = msg;
+                    this.toast.show = true;
+                    setTimeout(() => this.toast.show = false, 3000);
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+
+</html>

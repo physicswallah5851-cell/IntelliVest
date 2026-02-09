@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator - IntelliVest</title>
+
+    <!-- Tailwind CSS (Critical) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Vue.js (Critical for UI) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Deferred Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0B0E14;
+            color: #E2E8F0;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        /* Sidebar */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #94A3B8;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: rgba(124, 58, 237, 0.1);
+            color: #A78BFA;
+        }
+
+        .sidebar-link i {
+            width: 1.5rem;
+            text-align: center;
+            margin-right: 0.75rem;
+        }
+
+        /* Inputs */
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: white;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #7C3AED;
+        }
+
+        /* Switch/Tab */
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: #94A3B8;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #7C3AED;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <div id="app" class="flex w-full h-full" v-cloak>
+
+        <!-- Sidebar -->
+        <aside
+            class="w-64 bg-slate-900/50 border-r border-slate-800 flex-shrink-0 flex flex-col justify-between hidden md:flex">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-10">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-900/20">
+                        <i class="fa-solid fa-rocket text-white"></i>
+                    </div>
+                    <h1
+                        class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                        IntelliVest
+                    </h1>
+                </div>
+
+                <nav>
+                    <a href="/" class="sidebar-link">
+                        <i class="fa-solid fa-chart-pie"></i> Dashboard
+                    </a>
+                    <a href="/market" class="sidebar-link">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Market
+                    </a>
+                    <a href="/invest" class="sidebar-link">
+                        <i class="fa-solid fa-coins"></i> Invest
+                    </a>
+                    <a href="/budgets" class="sidebar-link">
+                        <i class="fa-solid fa-wallet"></i> Budgets
+                    </a>
+                    <a href="/calculator" class="sidebar-link active">
+                        <i class="fa-solid fa-calculator"></i> Calculator
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-slate-800 relative">
+                <div @click="showProfileMenu = !showProfileMenu"
+                    class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800/50 cursor-pointer transition-colors">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+                        {{ userInitials }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-white truncate">{{ userName }}</p>
+                        <p class="text-xs text-slate-400 truncate">Pro Member</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-up text-xs text-slate-500 transition-transform"
+                        :class="{'rotate-180': showProfileMenu}"></i>
+                </div>
+
+                <!-- Dropdown Menu -->
+                <div v-if="showProfileMenu"
+                    class="absolute bottom-full left-4 right-4 mb-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+                    <a href="/settings"
+                        class="block px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                        <i class="fa-solid fa-gear mr-2"></i> Settings
+                    </a>
+                    <div class="h-px bg-slate-700 my-0"></div>
+                    <a href="/logout"
+                        class="block px-4 py-3 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300 transition-colors">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-slate-950 p-4 md:p-8 relative">
+            <!-- Mobile Header -->
+            <div class="md:hidden flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+                        <i class="fa-solid fa-rocket text-white text-sm"></i>
+                    </div>
+                    <span class="font-bold text-lg">IntelliVest</span>
+                </div>
+                <button class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">Financial Tools</h2>
+
+                <!-- Tool Switcher -->
+                <div class="flex space-x-2 bg-slate-900/50 p-1 rounded-lg w-fit mb-8 border border-slate-800">
+                    <button @click="activeTab = 'sip'" :class="{'active': activeTab === 'sip'}" class="tab-btn">
+                        SIP Calculator
+                    </button>
+                    <button @click="activeTab = 'emi'" :class="{'active': activeTab === 'emi'}" class="tab-btn">
+                        EMI Calculator
+                    </button>
+                </div>
+
+                <!-- SIP Calculator -->
+                <div v-if="activeTab === 'sip'" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Inputs -->
+                    <div class="glass-panel p-6 space-y-6">
+                        <div class="input-group">
+                            <label>Monthly Investment (₹)</label>
+                            <input type="number" v-model="sip.investment" step="500">
+                            <input type="range" v-model="sip.investment" min="500" max="100000" step="500"
+                                class="w-full mt-2 accent-purple-500">
+                        </div>
+                        <div class="input-group">
+                            <label>Expected Return Rate (p.a %)</label>
+                            <input type="number" v-model="sip.rate" step="0.5">
+                            <input type="range" v-model="sip.rate" min="1" max="30" step="0.5"
+                                class="w-full mt-2 accent-purple-500">
+                        </div>
+                        <div class="input-group">
+                            <label>Time Period (Years)</label>
+                            <input type="number" v-model="sip.years" step="1">
+                            <input type="range" v-model="sip.years" min="1" max="40" step="1"
+                                class="w-full mt-2 accent-purple-500">
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="glass-panel p-6 flex flex-col justify-center items-center text-center">
+                        <div class="mb-6">
+                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2">Total Value
+                            </p>
+                            <h3 class="text-4xl font-bold text-green-400">₹{{ formatCurrency(sipResult.totalValue) }}
+                            </h3>
+                        </div>
+                        <div class="w-full space-y-3">
+                            <div class="flex justify-between text-sm border-b border-slate-700 pb-2">
+                                <span class="text-slate-400">Invested Amount</span>
+                                <span class="font-bold">₹{{ formatCurrency(sipResult.investedAmount) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm border-b border-slate-700 pb-2">
+                                <span class="text-slate-400">Est. Returns</span>
+                                <span class="font-bold text-green-400">+₹{{ formatCurrency(sipResult.estReturns)
+                                    }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMI Calculator -->
+                <div v-if="activeTab === 'emi'" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Inputs -->
+                    <div class="glass-panel p-6 space-y-6">
+                        <div class="input-group">
+                            <label>Loan Amount (₹)</label>
+                            <input type="number" v-model="emi.amount" step="10000">
+                            <input type="range" v-model="emi.amount" min="10000" max="10000000" step="10000"
+                                class="w-full mt-2 accent-blue-500">
+                        </div>
+                        <div class="input-group">
+                            <label>Interest Rate (p.a %)</label>
+                            <input type="number" v-model="emi.rate" step="0.1">
+                            <input type="range" v-model="emi.rate" min="1" max="25" step="0.1"
+                                class="w-full mt-2 accent-blue-500">
+                        </div>
+                        <div class="input-group">
+                            <label>Loan Tenure (Years)</label>
+                            <input type="number" v-model="emi.years" step="1">
+                            <input type="range" v-model="emi.years" min="1" max="30" step="1"
+                                class="w-full mt-2 accent-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="glass-panel p-6 flex flex-col justify-center items-center text-center">
+                        <div class="mb-6">
+                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2">Monthly EMI
+                            </p>
+                            <h3 class="text-4xl font-bold text-blue-400">₹{{ formatCurrency(emiResult.monthlyEMI) }}
+                            </h3>
+                        </div>
+                        <div class="w-full space-y-3">
+                            <div class="flex justify-between text-sm border-b border-slate-700 pb-2">
+                                <span class="text-slate-400">Principal Amount</span>
+                                <span class="font-bold">₹{{ formatCurrency(emi.amount) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm border-b border-slate-700 pb-2">
+                                <span class="text-slate-400">Total Interest</span>
+                                <span class="font-bold text-red-400">₹{{ formatCurrency(emiResult.totalInterest)
+                                    }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm pt-2">
+                                <span class="text-slate-400">Total Payable</span>
+                                <span class="font-bold">₹{{ formatCurrency(emiResult.totalPayable) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const activeTab = ref('sip');
+                const showProfileMenu = ref(false);
+                const userName = ref("{{ session['name'] }}");
+                const userInitials = ref("{{ session['initials'] }}");
+
+                // SIP Data
+                const sip = ref({
+                    investment: 5000,
+                    rate: 12,
+                    years: 10
+                });
+
+                // EMI Data
+                const emi = ref({
+                    amount: 500000,
+                    rate: 9,
+                    years: 3
+                });
+
+                // SIP Calculation Logic
+                const sipResult = computed(() => {
+                    const P = sip.value.investment;
+                    const n = sip.value.years * 12;
+                    const i = sip.value.rate / 12 / 100;
+
+                    // FV = P × [ (1 + i)^n - 1 ] × (1 + i) / i
+                    const totalValue = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                    const investedAmount = P * n;
+
+                    return {
+                        totalValue: Math.round(totalValue),
+                        investedAmount: Math.round(investedAmount),
+                        estReturns: Math.round(totalValue - investedAmount)
+                    };
+                });
+
+                // EMI Calculation Logic
+                const emiResult = computed(() => {
+                    const P = emi.value.amount;
+                    const r = emi.value.rate / 12 / 100;
+                    const n = emi.value.years * 12;
+
+                    // EMI = [P x r x (1+r)^n]/[(1+r)^n-1]
+                    const emiVal = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+                    const totalPayable = emiVal * n;
+
+                    return {
+                        monthlyEMI: Math.round(emiVal),
+                        totalPayable: Math.round(totalPayable),
+                        totalInterest: Math.round(totalPayable - P)
+                    };
+                });
+
+                // Helper
+                const formatCurrency = (val) => {
+                    return val.toLocaleString('en-IN');
+                };
+
+                return {
+                    activeTab,
+                    showProfileMenu,
+                    userName,
+                    userInitials,
+                    sip,
+                    emi,
+                    sipResult,
+                    emiResult,
+                    formatCurrency
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
