@@ -319,6 +319,8 @@ def get_stock_history(symbol):
         return jsonify(chart_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+@app.route('/')
 @login_required
 def home():
     return render_template('index.html')
