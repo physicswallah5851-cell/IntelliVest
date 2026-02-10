@@ -509,196 +509,197 @@
                         { name: '7.30% GS 2053', type: 'G-Sec', maturity: 'Jun 2053', coupon: '7.30%', price: 101.20, yield: 7.19 }
                     ],
                     session: {
-                        name: '{{ session.get("name", "User") }}',
-                        initials: '{{ session.get("initials", "U") }}',
-                        user: '{{ session.get("user", "user@example.com") }}'
+                        name: {{ session.get("name", "User") | tojson }
+            },
+            initials: {{ session.get("initials", "U") | tojson }},
+            user: {{ session.get("user", "user@example.com") | tojson }}
                     },
-                    isDarkMode: true,
-                    showNewModal: false,
-                    showChartModal: false,
-                    selectedStock: {},
-                    chartLoading: false,
-                    chartInstance: null,
-                    newTransaction: { description: '', amount: '', category: 'General' },
-                    toast: { show: false, message: '' }
+            isDarkMode: true,
+            showNewModal: false,
+            showChartModal: false,
+            selectedStock: {},
+            chartLoading: false,
+            chartInstance: null,
+            newTransaction: { description: '', amount: '', category: 'General' },
+            toast: { show: false, message: '' }
                 }
             },
             mounted() {
                 const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'light') {
-                    this.isDarkMode = false;
-                    document.body.classList.add('light-mode');
-                } else {
-                    this.isDarkMode = true;
-                    document.body.classList.remove('light-mode');
-                }
+                if(savedTheme === 'light') {
+            this.isDarkMode = false;
+            document.body.classList.add('light-mode');
+        } else {
+            this.isDarkMode = true;
+            document.body.classList.remove('light-mode');
+        }
 
-                // Fetch Live Data immediately
-                this.fetchMarketData();
-                this.fetchStockPrices();
+        // Fetch Live Data immediately
+        this.fetchMarketData();
+        this.fetchStockPrices();
 
-                // Refresh every 60 seconds
-                setInterval(() => {
-                    this.fetchMarketData();
-                    this.fetchStockPrices();
-                }, 60000);
+        // Refresh every 60 seconds
+        setInterval(() => {
+            this.fetchMarketData();
+            this.fetchStockPrices();
+        }, 60000);
             },
-            computed: {
-                filteredStocks() {
-                    if (!this.searchQuery) return this.stocks;
-                    const q = this.searchQuery.toLowerCase();
-                    return this.stocks.filter(s =>
-                        s.symbol.toLowerCase().includes(q) ||
-                        s.name.toLowerCase().includes(q)
-                    );
-                }
-            },
-            methods: {
+        computed: {
+            filteredStocks() {
+                if (!this.searchQuery) return this.stocks;
+                const q = this.searchQuery.toLowerCase();
+                return this.stocks.filter(s =>
+                    s.symbol.toLowerCase().includes(q) ||
+                    s.name.toLowerCase().includes(q)
+                );
+            }
+        },
+        methods: {
                 async fetchMarketData() {
-                    try {
-                        const res = await fetch('/api/market/indices');
-                        const data = await res.json();
-                        // Map the API data back to our indices array
-                        if (Array.isArray(data) && data.length > 0) {
-                            this.indices = data;
-                        }
-                    } catch (e) {
-                        console.error('Failed to fetch indices');
+                try {
+                    const res = await fetch('/api/market/indices');
+                    const data = await res.json();
+                    // Map the API data back to our indices array
+                    if (Array.isArray(data) && data.length > 0) {
+                        this.indices = data;
                     }
-                },
+                } catch (e) {
+                    console.error('Failed to fetch indices');
+                }
+            },
                 async fetchStockPrices() {
-                    try {
-                        // Extract symbols from our stocks list
-                        const symbols = this.stocks.map(s => s.symbol);
-                        const res = await fetch('/api/market/stocks', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ symbols })
-                        });
-                        const data = await res.json();
+                try {
+                    // Extract symbols from our stocks list
+                    const symbols = this.stocks.map(s => s.symbol);
+                    const res = await fetch('/api/market/stocks', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbols })
+                    });
+                    const data = await res.json();
 
-                        // Update local stocks with live data
-                        data.forEach(updatedStock => {
-                            const idx = this.stocks.findIndex(s => s.symbol === updatedStock.symbol);
-                            if (idx !== -1) {
-                                this.stocks[idx].price = updatedStock.price;
-                                this.stocks[idx].change = updatedStock.change;
-                            }
-                        });
-                    } catch (e) {
-                        console.error('Failed to fetch stock prices');
-                    }
-                },
-                toggleTheme() {
-                    this.isDarkMode = !this.isDarkMode;
-                    if (this.isDarkMode) {
-                        document.body.classList.remove('light-mode');
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        document.body.classList.add('light-mode');
-                        localStorage.setItem('theme', 'light');
-                    }
-                },
-                copyUPI() {
-                    navigator.clipboard.writeText('faisal19262@oksbi');
-                    this.copied = true;
-                    setTimeout(() => this.copied = false, 2000);
-                },
-                async addTransaction() {
-                    if (!this.newTransaction.description || !this.newTransaction.amount) return;
-                    try {
-                        const response = await fetch('/api/transactions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.newTransaction)
-                        });
-                        const data = await response.json();
-                        if (data.status === 'success') {
-                            this.showNewModal = false;
-                            this.newTransaction = { description: '', amount: '', category: 'General' };
-                            this.showToast('Transaction added successfully');
-                        }
-                    } catch (error) {
-                        console.error('Error adding transaction:', error);
-                    }
-                },
-                formatPrice(value) {
-                    return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
-                },
-                toggleTrack(stock) {
-                    stock.tracked = !stock.tracked;
-                    this.showToast(stock.tracked ? `Added ${stock.symbol} to Watchlist` : `Removed ${stock.symbol} from Watchlist`);
-                },
-                showToast(msg) {
-                    this.toast.message = msg;
-                    this.toast.show = true;
-                    setTimeout(() => this.toast.show = false, 3000);
-                },
-                async openChart(stock) {
-                    this.selectedStock = stock;
-                    this.showChartModal = true;
-                    this.chartLoading = true;
-
-                    // Wait for modal to render
-                    await this.$nextTick();
-
-                    if (this.chartInstance) {
-                        this.chartInstance.destroy();
-                    }
-
-                    const ctx = document.getElementById('historyChart').getContext('2d');
-
-                    // Initial empty chart
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                label: 'Price (INR)',
-                                data: [],
-                                borderColor: '#8B5CF6',
-                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                                tension: 0.2,
-                                fill: true,
-                                pointRadius: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                                intersect: false,
-                                mode: 'index',
-                            },
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                x: { display: false },
-                                y: {
-                                    grid: { color: '#334155' },
-                                    ticks: { color: '#94a3b8' }
-                                }
-                            }
+                    // Update local stocks with live data
+                    data.forEach(updatedStock => {
+                        const idx = this.stocks.findIndex(s => s.symbol === updatedStock.symbol);
+                        if (idx !== -1) {
+                            this.stocks[idx].price = updatedStock.price;
+                            this.stocks[idx].change = updatedStock.change;
                         }
                     });
-
-                    try {
-                        const lookupSym = stock.symbol.includes('.') ? stock.symbol : stock.symbol + '.NS';
-                        const res = await fetch(`/api/market/history/${lookupSym}`);
-                        const history = await res.json();
-
-                        this.chartInstance.data.labels = history.labels;
-                        this.chartInstance.data.datasets[0].data = history.data;
-                        this.chartInstance.update();
-                    } catch (e) {
-                        console.error("Failed to load history", e);
-                        this.showToast("Failed to load chart data");
-                    } finally {
-                        this.chartLoading = false;
+                } catch (e) {
+                    console.error('Failed to fetch stock prices');
+                }
+            },
+            toggleTheme() {
+                this.isDarkMode = !this.isDarkMode;
+                if (this.isDarkMode) {
+                    document.body.classList.remove('light-mode');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.add('light-mode');
+                    localStorage.setItem('theme', 'light');
+                }
+            },
+            copyUPI() {
+                navigator.clipboard.writeText('faisal19262@oksbi');
+                this.copied = true;
+                setTimeout(() => this.copied = false, 2000);
+            },
+                async addTransaction() {
+                if (!this.newTransaction.description || !this.newTransaction.amount) return;
+                try {
+                    const response = await fetch('/api/transactions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.newTransaction)
+                    });
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        this.showNewModal = false;
+                        this.newTransaction = { description: '', amount: '', category: 'General' };
+                        this.showToast('Transaction added successfully');
                     }
+                } catch (error) {
+                    console.error('Error adding transaction:', error);
+                }
+            },
+            formatPrice(value) {
+                return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+            },
+            toggleTrack(stock) {
+                stock.tracked = !stock.tracked;
+                this.showToast(stock.tracked ? `Added ${stock.symbol} to Watchlist` : `Removed ${stock.symbol} from Watchlist`);
+            },
+            showToast(msg) {
+                this.toast.message = msg;
+                this.toast.show = true;
+                setTimeout(() => this.toast.show = false, 3000);
+            },
+                async openChart(stock) {
+                this.selectedStock = stock;
+                this.showChartModal = true;
+                this.chartLoading = true;
+
+                // Wait for modal to render
+                await this.$nextTick();
+
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
+
+                const ctx = document.getElementById('historyChart').getContext('2d');
+
+                // Initial empty chart
+                this.chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Price (INR)',
+                            data: [],
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.2,
+                            fill: true,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: {
+                                grid: { color: '#334155' },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+
+                try {
+                    const lookupSym = stock.symbol.includes('.') ? stock.symbol : stock.symbol + '.NS';
+                    const res = await fetch(`/api/market/history/${lookupSym}`);
+                    const history = await res.json();
+
+                    this.chartInstance.data.labels = history.labels;
+                    this.chartInstance.data.datasets[0].data = history.data;
+                    this.chartInstance.update();
+                } catch (e) {
+                    console.error("Failed to load history", e);
+                    this.showToast("Failed to load chart data");
+                } finally {
+                    this.chartLoading = false;
                 }
             }
+        }
         }).mount('#app')
     </script>
 </body>
