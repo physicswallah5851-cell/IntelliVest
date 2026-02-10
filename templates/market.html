@@ -256,7 +256,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="stock in filteredStocks" :key="stock.code"
+                                <tr v-for="stock in filteredStocks" :key="stock.symbol"
                                     class="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
                                     <td class="p-4 font-bold text-white">[[ stock.symbol ]]</td>
                                     <td class="p-4 text-slate-300">[[ stock.name ]]</td>
@@ -295,7 +295,7 @@
 
                     <!-- Stock List (Mobile Cards - Groww Style) -->
                     <div class="lg:hidden space-y-3">
-                        <div v-for="stock in filteredStocks" :key="stock.code"
+                        <div v-for="stock in filteredStocks" :key="stock.symbol"
                             class="bg-[#1E293B]/40 p-4 rounded-xl border border-slate-800/50 flex justify-between items-center active:bg-slate-800 transition-colors">
                             <div class="flex items-center space-x-3">
                                 <div
@@ -360,7 +360,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="bond in bonds"
+                                <tr v-for="bond in bonds" :key="bond.name"
                                     class="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
                                     <td class="p-4">
                                         <div class="font-bold text-white">[[ bond.name ]]</div>
@@ -386,7 +386,7 @@
 
                     <!-- Bonds List (Mobile Cards - Groww Style) -->
                     <div class="lg:hidden space-y-3">
-                        <div v-for="bond in bonds"
+                        <div v-for="bond in bonds" :key="bond.name"
                             class="bg-[#1E293B]/40 p-4 rounded-xl border border-slate-800/50 active:bg-slate-800 transition-colors">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
