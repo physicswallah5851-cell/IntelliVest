@@ -328,19 +328,23 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            # Session info for templates - DYNAMIC now
-            session['name'] = user.name
-            session['initials'] = ''.join([n[0] for n in user.name.split()[:2]]).upper()
-            return redirect(url_for('home'))
-        else:
-            flash('Invalid email or password', 'error')
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            
+            user = User.query.filter_by(email=email).first()
+            
+            if user and check_password_hash(user.password, password):
+                login_user(user)
+                # Session info for templates - DYNAMIC now
+                session['name'] = user.name
+                session['initials'] = ''.join([n[0] for n in user.name.split()[:2]]).upper()
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid email or password', 'error')
+        except Exception as e:
+            app.logger.error(f"Login Error: {e}")
+            flash(f"Login Error: {str(e)}", 'error')
             
     return render_template('login.html')
 
