@@ -485,10 +485,9 @@
                         { name: '7.30% GS 2053', type: 'G-Sec', maturity: 'Jun 2053', coupon: '7.30%', price: 101.20, yield: 7.19 }
                     ],
                     session: {
-                        name: {{ session.get("name", "User") | tojson }
-            },
-            initials: {{ session.get("initials", "U") | tojson }},
-            user: {{ session.get("user", "user@example.com") | tojson }}
+                        name: {{ session.get("name", "User") | tojson }},
+                        initials: {{ session.get("initials", "U") | tojson }},
+                        user: {{ session.get("user", "user@example.com") | tojson }}
                     },
             isDarkMode: true,
             showNewModal: false,
