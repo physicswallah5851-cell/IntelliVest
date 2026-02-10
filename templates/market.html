@@ -282,15 +282,14 @@
                         { name: '7.30% GS 2053', type: 'G-Sec', maturity: '2053', price: 101.2, yield: 7.3 }
                     ],
                     session: {
-                        name: {{ session.get('name', 'User') | tojson }
-            },
-            initials: {{ session.get('initials', 'U') | tojson }},
-            user: {{ session.get('user', 'user@example.com') | tojson }}
+                        name: {{ session.get("name", "User") | tojson }},
+                        initials: {{ session.get("initials", "U") | tojson }},
+                        user: {{ session.get("user", "user@example.com") | tojson }}
                     }
                 }
             },
             mounted() {
-            this.isDarkMode = localStorage.getItem('theme') !== 'light';
+                this.isDarkMode = localStorage.getItem("theme") !== "light";
             this.updateTheme();
             this.loadData();
             setInterval(this.loadData, 30000);
