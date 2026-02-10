@@ -124,11 +124,11 @@
                     <div class="flex items-center space-x-3">
                         <div
                             class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
-                            {{ session.initials }}
+                            {{ initials }}
                         </div>
                         <div>
-                            <div class="text-sm font-semibold">{{ session.name }}</div>
-                            <div class="text-xs text-slate-400">{{ session.user }}</div>
+                            <div class="text-sm font-semibold">{{ name }}</div>
+                            <div class="text-xs text-slate-400">{{ user_email }}</div>
                         </div>
                         <i class="fas fa-chevron-up text-xs text-slate-500 ml-auto"></i>
                     </div>
@@ -509,10 +509,9 @@
                         { name: '7.30% GS 2053', type: 'G-Sec', maturity: 'Jun 2053', coupon: '7.30%', price: 101.20, yield: 7.19 }
                     ],
                     session: {
-                        name: {{ session.get("name", "User") | tojson }
-            },
-            initials: {{ session.get("initials", "U") | tojson }},
-            user: {{ session.get("user", "user@example.com") | tojson }}
+                        name: {{ session.get("name", "User") | tojson }},
+                        initials: {{ session.get("initials", "U") | tojson }},
+                        user: {{ session.get("user", "user@example.com") | tojson }}
                     },
             isDarkMode: true,
             showNewModal: false,
