@@ -13,6 +13,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -279,8 +280,12 @@
                                     <td class="p-4">
                                         <button @click="toggleTrack(stock)"
                                             :class="stock.tracked ? 'bg-green-500 text-white' : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'"
-                                            class="px-3 py-1 rounded-lg text-sm transition-all w-24">
+                                            class="px-3 py-1 rounded-lg text-sm transition-all w-24 mb-1">
                                             [[ stock.tracked ? 'Tracking' : 'Track' ]]
+                                        </button>
+                                        <button @click="openChart(stock)"
+                                            class="block w-24 px-3 py-1 rounded-lg text-sm bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white transition-all">
+                                            <i class="fas fa-chart-line mr-1"></i> Graph
                                         </button>
                                     </td>
                                 </tr>
@@ -405,43 +410,63 @@
                 </div>
 
             </div>
-        </main>
-        <!-- Donation Modal -->
-        <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
-            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
-            <div
-                class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
-                <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+    </div>
+    </main>
 
-                <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-heart text-3xl text-pink-500"></i>
-                </div>
+    <!-- Chart Modal -->
+    <div v-if="showChartModal" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showChartModal = false"></div>
+        <div class="relative bg-[#1E293B] border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-4xl w-full">
+            <button @click="showChartModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-white mb-1">[[ selectedStock.name ]]</h3>
+            <p class="text-sm text-slate-400 mb-4">[[ selectedStock.symbol ]] - All Time History</p>
 
-                <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
-                <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
-
-                <div class="bg-white p-4 rounded-xl mb-6 inline-block">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
-                        alt="Donate QR" class="w-48 h-48">
-                </div>
-
-                <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
-                    <div class="text-xs text-slate-400 text-left">
-                        <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
-                        <div class="text-white font-mono">faisal19262@oksbi</div>
-                    </div>
-                    <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
-                        [[ copied ? 'Copied!' : 'Copy' ]]
-                    </button>
-                </div>
-
-                <div class="mt-6 text-xs text-slate-500">
-                    Scan with GPay, PhonePe, or Paytm
+            <div class="relative h-[400px] w-full">
+                <canvas id="historyChart"></canvas>
+                <div v-if="chartLoading" class="absolute inset-0 flex items-center justify-center bg-[#1E293B]/80">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-500"></i>
                 </div>
             </div>
         </div>
+    </div>
+    <!-- Donation Modal -->
+    <div v-if="showDonate" class="fixed inset-0 z-[100] flex items-center justify-center px-4 fade-in">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showDonate = false"></div>
+        <div
+            class="relative bg-[#1E293B] border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <button @click="showDonate = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-heart text-3xl text-pink-500"></i>
+            </div>
+
+            <h3 class="text-2xl font-bold text-white mb-2">Support IntelliVest</h3>
+            <p class="text-slate-400 text-sm mb-6">Help us keep the servers running!</p>
+
+            <div class="bg-white p-4 rounded-xl mb-6 inline-block">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=faisal19262@oksbi&pn=Faisal%20Ansari&cu=INR"
+                    alt="Donate QR" class="w-48 h-48">
+            </div>
+
+            <div class="bg-slate-900 rounded-lg p-3 flex items-center justify-between border border-slate-700">
+                <div class="text-xs text-slate-400 text-left">
+                    <div class="uppercase tracking-wider font-bold mb-0.5">UPI ID</div>
+                    <div class="text-white font-mono">faisal19262@oksbi</div>
+                </div>
+                <button @click="copyUPI" class="text-pink-500 hover:text-pink-400 text-xs font-bold uppercase">
+                    [[ copied ? 'Copied!' : 'Copy' ]]
+                </button>
+            </div>
+
+            <div class="mt-6 text-xs text-slate-500">
+                Scan with GPay, PhonePe, or Paytm
+            </div>
+        </div>
+    </div>
     </div>
 
     <script>
@@ -490,6 +515,10 @@
                     },
                     isDarkMode: true,
                     showNewModal: false,
+                    showChartModal: false,
+                    selectedStock: {},
+                    chartLoading: false,
+                    chartInstance: null,
                     newTransaction: { description: '', amount: '', category: 'General' },
                     toast: { show: false, message: '' }
                 }
@@ -604,6 +633,70 @@
                     this.toast.message = msg;
                     this.toast.show = true;
                     setTimeout(() => this.toast.show = false, 3000);
+                },
+                async openChart(stock) {
+                    this.selectedStock = stock;
+                    this.showChartModal = true;
+                    this.chartLoading = true;
+
+                    // Wait for modal to render
+                    await this.$nextTick();
+
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                    }
+
+                    const ctx = document.getElementById('historyChart').getContext('2d');
+
+                    // Initial empty chart
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'Price (INR)',
+                                data: [],
+                                borderColor: '#8B5CF6',
+                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                tension: 0.2,
+                                fill: true,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: 'index',
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: {
+                                    grid: { color: '#334155' },
+                                    ticks: { color: '#94a3b8' }
+                                }
+                            }
+                        }
+                    });
+
+                    try {
+                        const lookupSym = stock.symbol.includes('.') ? stock.symbol : stock.symbol + '.NS';
+                        const res = await fetch(`/api/market/history/${lookupSym}`);
+                        const history = await res.json();
+
+                        this.chartInstance.data.labels = history.labels;
+                        this.chartInstance.data.datasets[0].data = history.data;
+                        this.chartInstance.update();
+                    } catch (e) {
+                        console.error("Failed to load history", e);
+                        this.showToast("Failed to load chart data");
+                    } finally {
+                        this.chartLoading = false;
+                    }
                 }
             }
         }).mount('#app')

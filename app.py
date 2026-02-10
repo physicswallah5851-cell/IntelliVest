@@ -297,7 +297,28 @@ def get_stock_prices():
 
 
 # --- Routes ---
-@app.route('/')
+@app.route('/api/market/history/<path:symbol>')
+@login_required
+def get_stock_history(symbol):
+    try:
+        # Fetch max history
+        ticker = yf.Ticker(symbol)
+        hist = ticker.history(period="max")
+        
+        # Data reduction: If too many points, resample
+        # Take every Nth point to keep JSON size manageable (~500 points max)
+        total_points = len(hist)
+        step = max(1, total_points // 500)
+        
+        subset = hist.iloc[::step]
+        
+        chart_data = {
+            "labels": subset.index.strftime('%Y-%m-%d').tolist(),
+            "data": subset['Close'].round(2).tolist()
+        }
+        return jsonify(chart_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 @login_required
 def home():
     return render_template('index.html')
