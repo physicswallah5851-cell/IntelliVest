@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import yfinance as yf
 from models import db, User, Transaction, Portfolio, Budget
 
 app = Flask(__name__)
@@ -225,6 +226,74 @@ def delete_portfolio(plan_id):
         db.session.commit()
         return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "Not found"}), 404
+
+# --- Market Data APIs ---
+@app.route('/api/market/indices')
+def get_market_indices():
+    # SENSEX (^BSESN), NIFTY 50 (^NSEI), BANK NIFTY (^NSEBANK), NASDAQ (^IXIC)
+    tickers = {
+        "SENSEX": "^BSESN",
+        "NIFTY 50": "^NSEI",
+        "BANK NIFTY": "^NSEBANK",
+        "NASDAQ": "^IXIC"
+    }
+    
+    data = []
+    for name, symbol in tickers.items():
+        try:
+            ticker = yf.Ticker(symbol)
+            # Use fast_info for better performance
+            price = ticker.fast_info.last_price
+            prev = ticker.fast_info.previous_close
+            change = price - prev
+            change_p = (change / prev) * 100
+            
+            data.append({
+                "name": name,
+                "price": round(price, 2),
+                "change": round(change_p, 2),
+                "symbol": symbol
+            })
+        except:
+            # Fallback if API fails
+            data.append({
+                "name": name,
+                "price": 0,
+                "change": 0,
+                "symbol": symbol
+            })
+            
+    return jsonify(data)
+
+@app.route('/api/market/stocks', methods=['POST'])
+def get_stock_prices():
+    # Expects a list of symbols e.g. ["RELIANCE.NS", "TCS.NS"]
+    req = request.get_json(silent=True) or {}
+    symbols = req.get('symbols', [])
+    
+    if not symbols:
+        return jsonify([])
+        
+    data = []
+    for sym in symbols:
+        try:
+            # Append .NS if not present for Indian stocks (rudimentary check)
+            lookup_sym = sym if ('.' in sym or '^' in sym) else f"{sym}.NS"
+            
+            ticker = yf.Ticker(lookup_sym)
+            price = ticker.fast_info.last_price
+            prev = ticker.fast_info.previous_close
+            change = (price - prev) / prev * 100
+            
+            data.append({
+                "symbol": sym, # Return original symbol requested
+                "price": round(price, 2),
+                "change": round(change, 2)
+            })
+        except:
+            pass
+            
+    return jsonify(data)
 
 
 # --- Routes ---
