@@ -4,3 +4,6 @@ flask-login
 werkzeug
 gunicorn
 yfinance
+Flask-Caching
+python-dotenv
+feedparser

@@ -157,6 +157,9 @@
                     <button @click="currentTab = 'bonds'"
                         :class="currentTab === 'bonds' ? 'text-white border-b-2 border-green-500' : 'text-slate-500'"
                         class="pb-2 font-bold px-2 transition-all">SGB & Bonds</button>
+                    <button @click="currentTab = 'news'"
+                        :class="currentTab === 'news' ? 'text-white border-b-2 border-pink-500' : 'text-slate-500'"
+                        class="pb-2 font-bold px-2 transition-all">Live News</button>
                 </div>
 
                 <!-- Stocks -->
@@ -225,6 +228,31 @@
                         </div>
                     </div>
                 </div>
+            
+            <!-- News -->
+            <div v-if="currentTab === 'news'" class="fade-in space-y-4">
+                <div v-if="newsLoading" class="flex justify-center p-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-500"></i>
+                </div>
+                <div v-else-if="news.length === 0" class="text-center p-8 text-slate-500">
+                    No news available right now.
+                </div>
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a v-for="(item, idx) in news" :key="idx" :href="item.link" target="_blank" class="glass-panel p-5 block hover:bg-slate-800/50 transition-colors group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[10px] font-bold px-2 py-1 rounded" 
+                                  :class="item.source.includes('Guardian') ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'">
+                                [[ item.source ]] • [[ item.type ]]
+                            </span>
+                            <span class="text-xs text-slate-500">
+                                [[ item.published ? new Date(item.published).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : '' ]]
+                            </span>
+                        </div>
+                        <h3 class="font-bold text-white mb-2 leading-tight group-hover:text-purple-400 transition-colors">[[ item.title ]]</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">[[ item.summary ]]</p>
+                    </a>
+                </div>
+                </div>
             </div>
         </main>
 
@@ -245,7 +273,10 @@
                 <div @click="copyUPI"
                     class="bg-slate-800 p-3 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700 flex justify-between items-center px-4">
                     <span class="text-xs font-mono">faisal19262@oksbi</span>
-                    <span class="text-[10px] font-bold text-pink-500 uppercase">[[ copied ? 'Copied' : 'Copy' ]]</span>
+                    <span class="text-[10px] font-bold text-pink-500 uppercase">
+                        <span v-show="copied">COPIED</span>
+                        <span v-show="!copied">COPY</span>
+                    </span>
                 </div>
                 <button @click="showDonate = false" class="mt-6 text-slate-500 text-xs hover:text-white">Close</button>
             </div>
@@ -260,6 +291,8 @@
             data() {
                 return {
                     currentTab: 'stocks',
+                    news: [],
+                    newsLoading: true,
                     showDonate: false,
                     showProfileMenu: false,
                     copied: false,
@@ -292,6 +325,7 @@
                 this.isDarkMode = localStorage.getItem("theme") !== "light";
             this.updateTheme();
             this.loadData();
+            this.fetchNews();
             setInterval(this.loadData, 30000);
             },
         methods: {
@@ -314,6 +348,17 @@
                         });
                     }
                 } catch (e) { }
+            },
+            async fetchNews() {
+                try {
+                    this.newsLoading = true;
+                    const res = await fetch('/api/market/news');
+                    this.news = await res.json();
+                } catch (e) {
+                    console.error("Failed to load news", e);
+                } finally {
+                    this.newsLoading = false;
+                }
             },
             toggleTheme() {
                 this.isDarkMode = !this.isDarkMode;
