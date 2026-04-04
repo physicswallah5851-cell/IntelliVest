@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliVest Academy</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        [v-cloak] { display: none !important; }
+        body { font-family: 'Outfit', sans-serif; background-color: #0B0E14; color: #E2E8F0; }
+        .glass-panel { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(12px); border-radius: 1rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-panel:hover { transform: translateY(-8px); border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.15); }
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .text-gradient { background: linear-gradient(135deg, #A855F7, #3B82F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Custom styled range slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #A855F7; cursor: pointer; margin-top: -10px; box-shadow: 0 0 15px rgba(168, 85, 247, 0.6); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
+        .currency-input::-webkit-outer-spin-button, .currency-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <div id="app" class="flex w-full h-full" v-cloak>
+        <!-- Sidebar -->
+        <aside class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col">
+            <div class="h-20 flex items-center px-6 border-b border-slate-800">
+                <i class="fas fa-bolt text-2xl text-purple-500 hover:rotate-12 transition-transform"></i>
+                <span class="ml-3 text-xl font-bold">IntelliVest</span>
+            </div>
+            <nav class="flex-1 py-6 px-4 space-y-2">
+                <a href="/" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-line w-8 text-center text-lg"></i> Overview
+                </a>
+                <a href="/market" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-chart-bar w-8 text-center text-lg"></i> Market (BSE)
+                </a>
+                <a href="/budgets" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-wallet w-8 text-center text-lg"></i> Budgets
+                </a>
+                <a href="/invest" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
+                    <i class="fas fa-magic w-8 text-center text-lg"></i> AI Advisor
+                </a>
+                <a href="/academy" class="flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 font-bold border border-purple-500/20 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]">
+                    <i class="fas fa-graduation-cap w-8 text-center text-lg"></i> Academy
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-800 mt-auto">
+                <div class="bg-slate-800/50 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors shadow-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-purple-500/50">
+                            {{ session.initials }}
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="text-sm font-semibold truncate">{{ session.name }}</div>
+                            <div class="text-[10px] text-slate-400 truncate">{{ session.user }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <header class="h-20 border-b border-slate-800 flex items-center px-8 bg-[#0B0E14]/80 backdrop-blur-xl z-20 sticky top-0 shadow-lg">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-graduation-cap text-purple-500 mr-3"></i> IntelliVest Masterclass
+                    </h1>
+                    <p class="text-xs text-slate-400">Advanced mechanics of capital preservation & psychology.</p>
+                </div>
+                <div class="ml-auto">
+                    <a href="/invest" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all transform hover:scale-105 border border-purple-400/30">
+                        Apply to Portfolio <i class="fas fa-rocket ml-2"></i>
+                    </a>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0B0E14] z-10 scroll-smooth">
+                <div class="max-w-6xl mx-auto space-y-12 pb-24">
+                    
+                    <!-- Title Section -->
+                    <div class="text-center py-12 fade-in relative">
+                        <div class="absolute inset-x-0 top-0 h-64 bg-purple-500/10 blur-[100px] -z-10 rounded-full"></div>
+                        <h2 class="text-4xl lg:text-6xl font-extrabold mb-6 text-white tracking-tight">The Architecture of <span class="text-gradient">Wealth</span></h2>
+                        <p class="text-slate-400 max-w-2xl mx-auto text-lg lg:text-xl font-light leading-relaxed">
+                            Move beyond basic advice. Interface directly with the fundamental mechanics that institutional investors use to analyze risk, exploit cognitive biases, and weaponize compound interest.
+                        </p>
+                    </div>
+
+                    <!-- Module 1: Inflation -->
+                    <div class="glass-panel p-8 fade-in border-t-4 border-t-red-500 relative overflow-hidden group">
+                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform">
+                            <i class="fas fa-fire fa-10x"></i>
+                        </div>
+                        <div class="flex items-start space-x-6 relative z-10">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0 border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                <i class="fas fa-chart-line text-2xl text-red-400"></i>
+                            </div>
+                            <div>
+                                <div class="inline-block px-3 py-1 bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider rounded-full mb-3 border border-red-500/20">Module I</div>
+                                <h3 class="text-3xl font-bold text-white mb-3">The Macroeconomics of Inflation</h3>
+                                <p class="text-slate-300 leading-relaxed mb-4 text-lg font-light">
+                                    Holding fiat currency (rupees, dollars) is a mathematically guaranteed loss of purchasing power over time. Central banks systematically inject liquidity into the economy, decreasing the discrete value of every circulating unit.
+                                </p>
+                                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                                    <strong class="text-white">The Imperative:</strong> Investing is not an optional "risk" you take to get rich; it is a mandatory defensive structure required to maintain your current standard of living. If the true inflation rate is 6%, any capital sitting in a savings account yielding 3% is eroding in real purchasing power.
+                                </p>
+                                <div class="bg-black/30 p-5 rounded-xl border border-red-900/30 text-sm font-mono text-red-200/80 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
+                                    <i class="fas fa-code-branch text-red-500 mr-2"></i> Equation: Real Return = Nominal Return - Inflation Rate.<br>
+                                    <span class="mt-2 block pl-6 text-slate-400 text-xs text-red-300/50"># A 10% stock market return during 6% inflation yields a marginal 4% true wealth increase.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Module 2: Mechanics -->
+                    <div class="glass-panel p-8 fade-in border-t-4 border-t-blue-500 relative overflow-hidden group" style="animation-delay: 0.1s;">
+                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:-rotate-12 transform">
+                            <i class="fas fa-cogs fa-10x"></i>
+                        </div>
+                        <div class="flex flex-col lg:flex-row items-start gap-10 relative z-10">
+                            <div class="lg:w-2/3">
+                                <div class="flex items-center space-x-5 mb-6">
+                                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                        <i class="fas fa-building text-2xl text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <div class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full mb-1 border border-blue-500/20">Module II</div>
+                                        <h3 class="text-3xl font-bold text-white">Market Mechanics & Valuations</h3>
+                                    </div>
+                                </div>
+                                <p class="text-slate-300 leading-relaxed mb-6 font-light text-lg">
+                                    Equity fundamentally represents fractional ownership of a corporation's future Free Cash Flows (FCF). It is not a magical chart.
+                                </p>
+                                <ul class="space-y-5">
+                                    <li class="flex items-start">
+                                        <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 mt-1 border border-blue-500/30 flex-shrink-0">
+                                            <i class="fas fa-exchange-alt text-blue-400 text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="text-white block text-lg mb-1">Order Books & Liquidity</strong>
+                                            <span class="text-slate-400 text-sm leading-relaxed">Prices change via the Bid-Ask spread. There is no central price algorithm; prices only move because a buyer physically executes an order against an opposing seller's limit order, consuming "liquidity" on the book.</span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 mt-1 border border-blue-500/30 flex-shrink-0">
+                                            <i class="fas fa-chart-pie text-blue-400 text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="text-white block text-lg mb-1">Market Capitalization</strong>
+                                            <span class="text-slate-400 text-sm leading-relaxed">Price × Outstanding Shares. This dictates the actual size of the company. A ₹10 stock with 1 billion shares is inherently a larger company than a ₹5,000 stock with 1 million shares.</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="lg:w-1/3 w-full bg-black/40 border border-slate-700/50 rounded-2xl p-5 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
+                                <h4 class="text-xs uppercase font-bold text-blue-400 mb-4 border-b border-slate-800 pb-3 flex items-center"><i class="fas fa-server mr-2"></i> Live L2 Order Book Sim</h4>
+                                <div class="space-y-2 font-mono text-[13px]">
+                                    <div class="flex justify-between text-red-400 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.50</span><span class="opacity-70">600 Vol</span></div>
+                                    <div class="flex justify-between text-red-500 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.25</span><span class="opacity-70">120 Vol</span></div>
+                                    <div class="flex justify-between text-red-600 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.10</span><span class="opacity-70">200 Vol</span></div>
+                                    
+                                    <div class="relative py-3">
+                                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-800 border-dashed"></div></div>
+                                        <div class="relative flex justify-center"><span class="bg-[#0B0E14] px-3 font-bold text-white text-xs tracking-widest bg-slate-900 border border-slate-700 rounded-full py-1">SPREAD ₹0.10</span></div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between text-green-500 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4500.00</span><span class="opacity-70">850 Vol</span></div>
+                                    <div class="flex justify-between text-green-600 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4499.75</span><span class="opacity-70">1400 Vol</span></div>
+                                    <div class="flex justify-between text-green-700 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4499.50</span><span class="opacity-70">3100 Vol</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Module 3: Behavioral Finance -->
+                    <div class="glass-panel p-8 fade-in border-t-4 border-t-emerald-500 relative overflow-hidden group" style="animation-delay: 0.2s;">
+                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform">
+                            <i class="fas fa-brain fa-10x"></i>
+                        </div>
+                        <div class="flex items-start space-x-6 relative z-10">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                <i class="fas fa-user-shield text-2xl text-emerald-400"></i>
+                            </div>
+                            <div>
+                                <div class="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider rounded-full mb-3 border border-emerald-500/20">Module III</div>
+                                <h3 class="text-3xl font-bold text-white mb-3">Behavioral Finance</h3>
+                                <p class="text-slate-300 leading-relaxed mb-4 text-lg font-light">
+                                    The math is easy. The psychology is what destroys retail traders. Cognitive biases force humans to buy exactly at the top of bubbles (greed) and capitulate at the exact market bottoms (fear).
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                    <div class="bg-black/30 p-5 rounded-xl border border-slate-700/50">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center"><i class="fas fa-sad-tear mr-2"></i> Loss Aversion</div>
+                                        <p class="text-sm text-slate-400 leading-relaxed">Psychologically, the pain of losing ₹100,000 feels twice as intense as the joy of gaining ₹100,000. This causes investors to panic sell structurally sound assets during temporary market corrections, crystallizing what was only a paper loss into permanent damage.</p>
+                                    </div>
+                                    <div class="bg-black/30 p-5 rounded-xl border border-slate-700/50">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center"><i class="fas fa-filter mr-2"></i> Confirmation Bias</div>
+                                        <p class="text-sm text-slate-400 leading-relaxed">Investors seek out information (news, forums) that confirms what they already believe about a stock, actively ignoring massive red flags in financial statements. The market doesn't care about your opinion; respect the data.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Module 4: The Compounding Simulator (INTERACTIVE) -->
+                    <div class="glass-panel p-8 md:p-12 fade-in border-t-4 border-t-purple-500 relative overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.1)]" style="animation-delay: 0.3s;">
+                        
+                        <div class="flex flex-col lg:flex-row gap-12 items-center relative z-10">
+                            <div class="lg:w-1/2">
+                                <div class="inline-block px-3 py-1 bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-wider rounded-full mb-4 border border-purple-500/20">Module IV - Interactive</div>
+                                <h3 class="text-3xl lg:text-4xl font-extrabold text-white mb-4">Weaponizing <span class="text-gradient">Time</span></h3>
+                                <p class="text-slate-300 leading-relaxed mb-8 text-lg font-light">
+                                    Albert Einstein allegedly called compound interest the 8th wonder of the world. Play with the simulator to see how time—not capital—is the ultimate lever of extreme wealth generation.
+                                </p>
+                                
+                                <div class="space-y-8 bg-black/40 p-6 rounded-2xl border border-slate-700/50">
+                                    <!-- Monthly Input -->
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <label class="text-sm font-bold text-slate-300">Monthly Contribution</label>
+                                            <span class="text-purple-400 font-bold text-lg">₹[[ formatPrice(sim.monthly) ]]</span>
+                                        </div>
+                                        <input type="range" v-model="sim.monthly" min="1000" max="250000" step="1000" @change="updateSimChart">
+                                    </div>
+                                    
+                                    <!-- Years Input -->
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <label class="text-sm font-bold text-slate-300">Time Horizon</label>
+                                            <span class="text-blue-400 font-bold text-lg">[[ sim.years ]] Years</span>
+                                        </div>
+                                        <input type="range" v-model="sim.years" min="1" max="40" step="1" @change="updateSimChart">
+                                    </div>
+
+                                    <!-- APY Input -->
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <label class="text-sm font-bold text-slate-300">Expected Annual Return</label>
+                                            <span class="text-emerald-400 font-bold text-lg">[[ sim.rate ]]% CAGR</span>
+                                        </div>
+                                        <input type="range" v-model="sim.rate" min="2" max="25" step="1" @change="updateSimChart">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lg:w-1/2 w-full h-[500px] flex flex-col justify-end relative">
+                                <!-- Stats Header -->
+                                <div class="absolute top-0 left-0 right-0 z-10 grid grid-cols-2 gap-4">
+                                    <div class="bg-black/60 backdrop-blur-md border border-slate-700 rounded-xl p-4 shadow-xl">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Principal Paid</div>
+                                        <div class="text-xl font-mono text-slate-200">₹[[ formatPrice(calcPrincipal) ]]</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-md border border-purple-500/30 rounded-xl p-4 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                                        <div class="text-xs text-purple-300 font-bold uppercase tracking-wider mb-1">Final Wealth</div>
+                                        <div class="text-2xl font-mono text-white font-bold">₹[[ formatPrice(calcTotal) ]]</div>
+                                    </div>
+                                </div>
+                                <canvas id="compoundChart" class="mt-20"></canvas>
+                                <p class="text-center text-[10px] text-slate-500 uppercase tracking-widest mt-4">The Exponential Curve of Capital Growth</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    session: {
+                        name: '{{ session.get("name", "Investor") }}',
+                        initials: '{{ session.get("initials", "IN") }}',
+                        user: '{{ session.get("user", "") }}'
+                    },
+                    sim: {
+                        monthly: 15000,
+                        years: 20,
+                        rate: 12
+                    },
+                    chartInstance: null
+                }
+            },
+            computed: {
+                calcPrincipal() {
+                    return this.sim.monthly * 12 * this.sim.years;
+                },
+                calcTotal() {
+                    let total = 0;
+                    const r = this.sim.rate / 100 / 12;
+                    const months = this.sim.years * 12;
+                    for (let i = 0; i < months; i++) {
+                        total += parseFloat(this.sim.monthly);
+                        total *= (1 + r);
+                    }
+                    return total;
+                }
+            },
+            mounted() {
+                this.initChart();
+            },
+            methods: {
+                formatPrice(val) {
+                    if(val > 10000000) return (val/10000000).toFixed(2) + ' Cr';
+                    return Math.round(val).toLocaleString('en-IN');
+                },
+                generateData() {
+                    let labels = [];
+                    let principalData = [];
+                    let interestData = [];
+                    
+                    let runningPrincipal = 0;
+                    let runningTotal = 0;
+                    const r = this.sim.rate / 100;
+
+                    for(let y=1; y<=this.sim.years; y++) {
+                        labels.push(`Year ${y}`);
+                        runningPrincipal += (this.sim.monthly * 12);
+                        
+                        // Simple annual compound approximation for the chart
+                        runningTotal = (runningTotal + (this.sim.monthly * 12)) * (1 + r);
+                        
+                        principalData.push(runningPrincipal);
+                        interestData.push(runningTotal - runningPrincipal);
+                    }
+                    return { labels, principalData, interestData };
+                },
+                initChart() {
+                    const ctx = document.getElementById('compoundChart').getContext('2d');
+                    
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'bar', // Stacked area chart feeling
+                        data: {
+                            labels: this.generateData().labels,
+                            datasets: [
+                                {
+                                    label: 'Your Principal',
+                                    data: this.generateData().principalData,
+                                    backgroundColor: '#334155',
+                                    stack: 'Stack 0',
+                                },
+                                {
+                                    label: 'Compound Interest',
+                                    data: this.generateData().interestData,
+                                    backgroundColor: '#A855F7',
+                                    stack: 'Stack 0',
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { position: 'bottom', labels: { color: '#94A3B8', usePointStyle: true, boxWidth: 8 } },
+                                tooltip: { 
+                                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                                    titleColor: '#fff', 
+                                    bodyColor: '#cbd5e1',
+                                    borderColor: 'rgba(51, 65, 85, 0.8)',
+                                    borderWidth: 1,
+                                    padding: 12
+                                }
+                            },
+                            scales: {
+                                x: { stacked: true, grid: { display: false }, ticks: { color: '#64748B', maxTicksLimit: 10 } },
+                                y: { 
+                                    stacked: true, 
+                                    grid: { color: '#1E293B', drawBorder: false }, 
+                                    ticks: { 
+                                        color: '#64748B',
+                                        callback: function(value) {
+                                            if (value >= 10000000) return '₹' + (value / 10000000).toFixed(1) + ' Cr';
+                                            if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + ' L';
+                                            return '₹' + value;
+                                        } 
+                                    } 
+                                }
+                            }
+                        }
+                    });
+                },
+                updateSimChart() {
+                    if(!this.chartInstance) return;
+                    const newData = this.generateData();
+                    this.chartInstance.data.labels = newData.labels;
+                    this.chartInstance.data.datasets[0].data = newData.principalData;
+                    this.chartInstance.data.datasets[1].data = newData.interestData;
+                    this.chartInstance.update();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

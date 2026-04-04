@@ -25,6 +25,11 @@ def invest():
 def budgets():
     return render_template('budgets.html')
 
+@views_bp.route('/academy')
+@login_required
+def academy():
+    return render_template('academy.html')
+
 @views_bp.route('/settings')
 @login_required
 def settings():
