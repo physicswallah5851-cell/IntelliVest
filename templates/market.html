@@ -170,42 +170,98 @@
 
                 <!-- Stocks -->
                 <div v-if="currentTab === 'stocks'" class="fade-in space-y-6">
-                    <div class="flex space-x-4 overflow-x-auto pb-2 no-scrollbar">
-                        <div v-for="index in indices" :key="index.name" class="glass-panel p-4 min-w-[180px]">
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="text-slate-400 font-bold uppercase">[[ index.name ]]</span>
-                                <span :class="index.change >= 0 ? 'text-green-400' : 'text-danger-400'">[[ index.change
-                                    ]]%</span>
+
+                    <!-- Market Status -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span>
+                            <span class="text-xs text-slate-400">Live Market Data · Auto-refreshes every 30s</span>
+                        </div>
+                        <button @click="loadData" class="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+
+                    <!-- Index Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div v-for="index in indices" :key="index.name" class="glass-panel p-5 relative overflow-hidden hover:-translate-y-1 transition-all duration-300 group">
+                            <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <i class="fas fa-chart-line text-6xl"></i>
                             </div>
-                            <div class="text-xl font-bold text-white">₹[[ index.price.toLocaleString() ]]</div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">[[ index.name ]]</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                        :class="index.change >= 0 ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20'">
+                                        <i :class="index.change >= 0 ? 'fas fa-caret-up' : 'fas fa-caret-down'" class="mr-0.5"></i>[[ index.change ]]%
+                                    </span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-white font-mono">₹[[ index.price.toLocaleString('en-IN') ]]</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="glass-panel overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-900/50 text-xs font-bold text-slate-500 border-b border-slate-800">
-                                <tr>
-                                    <th class="p-4">Symbol</th>
-                                    <th class="p-4 text-right">Price</th>
-                                    <th class="p-4 text-right">Day Change</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="stock in stocks" :key="stock.symbol"
-                                    class="border-b border-slate-800 hover:bg-slate-800/30">
-                                    <td class="p-4">
-                                        <div class="font-bold text-white">[[ stock.symbol ]]</div>
-                                        <div class="text-[10px] text-slate-500">[[ stock.name ]]</div>
-                                    </td>
-                                    <td class="p-4 text-right font-mono text-white">₹[[
-                                        stock.price.toLocaleString('en-IN') ]]</td>
-                                    <td class="p-4 text-right font-mono"
-                                        :class="stock.change >= 0 ? 'text-green-400' : 'text-red-400'">
-                                        [[ stock.change > 0 ? '+' : '' ]][[ stock.change ]]%
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Sector Filter -->
+                    <div class="flex flex-wrap gap-2">
+                        <button @click="sectorFilter = 'all'" :class="sectorFilter === 'all' ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800'" class="px-4 py-1.5 rounded-full text-xs font-bold border transition-all">All Sectors</button>
+                        <button v-for="sec in availableSectors" :key="sec" @click="sectorFilter = sec" :class="sectorFilter === sec ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800'" class="px-4 py-1.5 rounded-full text-xs font-bold border transition-all">[[ sec ]]</button>
+                    </div>
+
+                    <!-- Stock Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-for="stock in filteredStocks" :key="stock.symbol" class="glass-panel p-5 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+                            <div class="absolute -right-6 -bottom-6 opacity-0 group-hover:opacity-5 transition-opacity duration-500">
+                                <i class="fas fa-chart-area text-8xl" :class="stock.change >= 0 ? 'text-green-500' : 'text-red-500'"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <!-- Header -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-lg font-extrabold text-white">[[ stock.symbol ]]</span>
+                                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-400 border border-slate-600/50">[[ stock.sector ]]</span>
+                                        </div>
+                                        <div class="text-xs text-slate-500">[[ stock.name ]]</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xl font-extrabold font-mono text-white">₹[[ stock.price.toLocaleString('en-IN') ]]</div>
+                                        <div class="text-xs font-bold font-mono mt-0.5"
+                                            :class="stock.change >= 0 ? 'text-green-400' : 'text-red-400'">
+                                            <i :class="stock.change >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" class="mr-0.5 text-[10px]"></i>
+                                            [[ stock.change > 0 ? '+' : '' ]][[ stock.change ]]%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Details Grid -->
+                                <div class="grid grid-cols-3 gap-2 mb-4">
+                                    <div class="bg-black/30 rounded-lg p-2.5 text-center">
+                                        <div class="text-[9px] text-slate-500 uppercase tracking-wider">Prev Close</div>
+                                        <div class="text-xs font-bold text-slate-300 mt-0.5 font-mono">₹[[ stock.prevClose.toLocaleString('en-IN') ]]</div>
+                                    </div>
+                                    <div class="bg-black/30 rounded-lg p-2.5 text-center">
+                                        <div class="text-[9px] text-slate-500 uppercase tracking-wider">Mkt Cap</div>
+                                        <div class="text-xs font-bold text-slate-300 mt-0.5">[[ stock.mcap ]]</div>
+                                    </div>
+                                    <div class="bg-black/30 rounded-lg p-2.5 text-center">
+                                        <div class="text-[9px] text-slate-500 uppercase tracking-wider">Volume</div>
+                                        <div class="text-xs font-bold text-slate-300 mt-0.5">[[ stock.volume ]]</div>
+                                    </div>
+                                </div>
+
+                                <!-- 52W Range -->
+                                <div>
+                                    <div class="flex justify-between text-[9px] text-slate-500 mb-1">
+                                        <span>52W Low: ₹[[ stock.low52.toLocaleString('en-IN') ]]</span>
+                                        <span class="text-[9px] uppercase tracking-wider font-bold text-slate-600">52W Range</span>
+                                        <span>52W High: ₹[[ stock.high52.toLocaleString('en-IN') ]]</span>
+                                    </div>
+                                    <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
+                                        <div class="h-full rounded-full transition-all duration-500"
+                                            :class="stock.change >= 0 ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-red-600 to-red-400'"
+                                            :style="'width:' + ((stock.price - stock.low52) / (stock.high52 - stock.low52) * 100).toFixed(1) + '%'"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -424,12 +480,18 @@
                         { name: 'Nifty 50', price: 0, change: 0 },
                         { name: 'Bank Nifty', price: 0, change: 0 }
                     ],
+                    sectorFilter: 'all',
                     stocks: [
-                        { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2950.45, change: 1.25 },
-                        { symbol: 'TCS', name: 'Tata Consultancy Services', price: 4120.30, change: -0.45 },
-                        { symbol: 'INFY', name: 'Infosys Ltd', price: 1680.50, change: 2.10 },
-                        { symbol: 'TATAMOTORS', name: 'Tata Motors', price: 980.25, change: 3.40 },
-                        { symbol: 'BAJFINANCE', name: 'Bajaj Finance', price: 6540.90, change: 1.80 }
+                        { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2950.45, change: 1.25, sector: 'Energy', prevClose: 2914.10, mcap: '₹20.0L Cr', volume: '12.3M', low52: 2220, high52: 3024 },
+                        { symbol: 'TCS', name: 'Tata Consultancy Services', price: 4120.30, change: -0.45, sector: 'IT', prevClose: 4138.90, mcap: '₹14.9L Cr', volume: '3.1M', low52: 3311, high52: 4258 },
+                        { symbol: 'INFY', name: 'Infosys Ltd', price: 1680.50, change: 2.10, sector: 'IT', prevClose: 1645.90, mcap: '₹6.9L Cr', volume: '8.7M', low52: 1358, high52: 1760 },
+                        { symbol: 'HDFCBANK', name: 'HDFC Bank', price: 1625.80, change: 0.85, sector: 'Banking', prevClose: 1612.05, mcap: '₹12.3L Cr', volume: '9.2M', low52: 1363, high52: 1757 },
+                        { symbol: 'ICICIBANK', name: 'ICICI Bank', price: 1240.30, change: 1.65, sector: 'Banking', prevClose: 1220.10, mcap: '₹8.7L Cr', volume: '11.5M', low52: 970, high52: 1310 },
+                        { symbol: 'TATAMOTORS', name: 'Tata Motors', price: 980.25, change: 3.40, sector: 'Auto', prevClose: 948.00, mcap: '₹3.6L Cr', volume: '15.8M', low52: 620, high52: 1065 },
+                        { symbol: 'BAJFINANCE', name: 'Bajaj Finance', price: 6540.90, change: 1.80, sector: 'NBFC', prevClose: 6425.30, mcap: '₹4.0L Cr', volume: '1.8M', low52: 5876, high52: 8192 },
+                        { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: 2380.15, change: -0.32, sector: 'FMCG', prevClose: 2387.80, mcap: '₹5.6L Cr', volume: '2.4M', low52: 2172, high52: 2786 },
+                        { symbol: 'SUNPHARMA', name: 'Sun Pharmaceutical', price: 1752.40, change: 1.95, sector: 'Pharma', prevClose: 1718.85, mcap: '₹4.2L Cr', volume: '5.6M', low52: 1208, high52: 1960 },
+                        { symbol: 'ADANIENT', name: 'Adani Enterprises', price: 2890.60, change: -1.20, sector: 'Infra', prevClose: 2925.70, mcap: '₹3.3L Cr', volume: '6.4M', low52: 2142, high52: 3488 }
                     ],
                     bondFilter: 'all',
                     bonds: [
@@ -453,6 +515,13 @@
                 filteredBonds() {
                     if (this.bondFilter === 'all') return this.bonds;
                     return this.bonds.filter(b => b.type === this.bondFilter);
+                },
+                filteredStocks() {
+                    if (this.sectorFilter === 'all') return this.stocks;
+                    return this.stocks.filter(s => s.sector === this.sectorFilter);
+                },
+                availableSectors() {
+                    return [...new Set(this.stocks.map(s => s.sector))];
                 }
             },
             mounted() {
