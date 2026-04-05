@@ -376,77 +376,123 @@
 
                 <!-- Simulator View -->
                 <div v-show="currentTab === 'simulation'"
-                    class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 fade-in">
-                    <!-- Controls -->
-                    <div class="lg:col-span-4 glass-panel p-8 h-fit">
-                        <h2 class="text-xl font-bold mb-6 flex items-center space-x-2">
-                            <i class="fas fa-sliders-h text-purple-500"></i>
-                            <span>Parameters</span>
-                        </h2>
+                    class="max-w-6xl mx-auto fade-in space-y-6">
 
-                        <div class="space-y-6">
-                            <div>
-                                <label
-                                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Upfront
-                                    Cost</label>
-                                <input type="range" v-model.number="sim.cost" min="0" max="50000" step="1000"
-                                    class="w-full accent-purple-500 mb-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-slate-600">₹0</span>
-                                    <span class="text-lg font-bold text-white">[[ formatPrice(sim.cost) ]]</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Monthly
-                                    Payment</label>
-                                <input type="range" v-model.number="sim.monthly" min="0" max="25000" step="500"
-                                    class="w-full accent-blue-500 mb-2">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-slate-600">₹0</span>
-                                    <span class="text-lg font-bold text-white">[[ formatPrice(sim.monthly) ]]</span>
-                                </div>
-                            </div>
-
-                            <button @click="runSimulation"
-                                class="w-full btn-primary py-3 rounded-xl font-bold text-white shadow-lg shadow-purple-900/20 mt-4">
-                                <i class="fas fa-play mr-2"></i> Run Simulation
-                            </button>
-                        </div>
+                    <!-- Hero -->
+                    <div class="text-center py-4">
+                        <h2 class="text-2xl lg:text-3xl font-extrabold text-white mb-2">Wealth Growth <span class="text-gradient">Simulator</span></h2>
+                        <p class="text-slate-400 text-sm">Model your future portfolio with precision. Adjust parameters and see real-time projections.</p>
                     </div>
 
-                    <!-- Results -->
-                    <div class="lg:col-span-8 glass-panel p-8 relative min-h-[500px] flex flex-col">
-                        <div v-if="!sim.results"
-                            class="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
-                            <i class="fas fa-chart-area text-6xl mb-4 opacity-20"></i>
-                            <p>Adjust parameters and run simulation</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                        <!-- Controls Panel -->
+                        <div class="lg:col-span-5 glass-panel p-6 h-fit space-y-5">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-slate-800">
+                                <i class="fas fa-sliders-h text-purple-400"></i> Investment Parameters
+                            </h3>
+
+                            <!-- Lump Sum -->
+                            <div>
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Lump Sum Investment</label>
+                                    <span class="text-sm font-bold text-purple-400 font-mono">[[ formatPrice(sim.lumpSum) ]]</span>
+                                </div>
+                                <input type="range" v-model.number="sim.lumpSum" min="0" max="5000000" step="50000" class="w-full accent-purple-500">
+                                <div class="flex justify-between text-[9px] text-slate-600 mt-0.5"><span>₹0</span><span>₹50L</span></div>
+                            </div>
+
+                            <!-- Monthly SIP -->
+                            <div>
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly SIP</label>
+                                    <span class="text-sm font-bold text-blue-400 font-mono">[[ formatPrice(sim.monthly) ]]</span>
+                                </div>
+                                <input type="range" v-model.number="sim.monthly" min="0" max="200000" step="1000" class="w-full accent-blue-500">
+                                <div class="flex justify-between text-[9px] text-slate-600 mt-0.5"><span>₹0</span><span>₹2L</span></div>
+                            </div>
+
+                            <!-- Time Horizon -->
+                            <div>
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Time Horizon</label>
+                                    <span class="text-sm font-bold text-emerald-400 font-mono">[[ sim.years ]] Years</span>
+                                </div>
+                                <input type="range" v-model.number="sim.years" min="1" max="40" step="1" class="w-full accent-emerald-500">
+                                <div class="flex justify-between text-[9px] text-slate-600 mt-0.5"><span>1yr</span><span>40yrs</span></div>
+                            </div>
+
+                            <!-- Expected CAGR -->
+                            <div>
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Expected CAGR</label>
+                                    <span class="text-sm font-bold text-yellow-400 font-mono">[[ sim.cagr ]]%</span>
+                                </div>
+                                <input type="range" v-model.number="sim.cagr" min="4" max="25" step="1" class="w-full accent-yellow-500">
+                                <div class="flex justify-between text-[9px] text-slate-600 mt-0.5"><span>4%</span><span>25%</span></div>
+                            </div>
+
+                            <!-- Inflation -->
+                            <div>
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Inflation Rate</label>
+                                    <span class="text-sm font-bold text-red-400 font-mono">[[ sim.inflation ]]%</span>
+                                </div>
+                                <input type="range" v-model.number="sim.inflation" min="0" max="12" step="0.5" class="w-full accent-red-500">
+                                <div class="flex justify-between text-[9px] text-slate-600 mt-0.5"><span>0%</span><span>12%</span></div>
+                            </div>
+
+                            <button @click="runLocalSimulation"
+                                class="w-full btn-primary py-3.5 rounded-xl font-bold text-white shadow-lg shadow-purple-900/30 text-sm">
+                                <i class="fas fa-rocket mr-2"></i> Run Simulation
+                            </button>
                         </div>
 
-                        <div v-else class="fade-in flex flex-col h-full">
-                            <div class="flex justify-between items-start mb-6">
-                                <div>
-                                    <h3 class="text-lg font-bold">Projected Impact (1 Year)</h3>
-                                    <p class="text-sm text-slate-400">Comparing current trajectory vs. scenario</p>
-                                </div>
-                                <div :class="sim.results.status === 'safe' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'"
-                                    class="px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider">
-                                    [[ sim.results.status ]]
-                                </div>
+                        <!-- Results Panel -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <div v-if="!sim.computed" class="glass-panel p-12 flex flex-col items-center justify-center text-center min-h-[500px]">
+                                <i class="fas fa-chart-area text-6xl text-purple-500/15 mb-4"></i>
+                                <p class="text-slate-500 text-sm">Configure your investment parameters and click <strong class="text-slate-300">Run Simulation</strong></p>
                             </div>
 
-                            <div class="flex-1 w-full bg-slate-900/50 rounded-xl mb-6 p-4">
-                                <canvas id="simChart"></canvas>
-                            </div>
+                            <div v-else class="space-y-4 fade-in">
+                                <!-- KPI Row -->
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="glass-panel p-5 border-t-2 border-t-purple-500">
+                                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Final Corpus</div>
+                                        <div class="text-2xl font-extrabold text-white font-mono">[[ simFormatLarge(sim.computed.total) ]]</div>
+                                    </div>
+                                    <div class="glass-panel p-5 border-t-2 border-t-blue-500">
+                                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Total Invested</div>
+                                        <div class="text-2xl font-extrabold text-blue-400 font-mono">[[ simFormatLarge(sim.computed.invested) ]]</div>
+                                    </div>
+                                    <div class="glass-panel p-5 border-t-2 border-t-emerald-500">
+                                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Wealth Gained</div>
+                                        <div class="text-2xl font-extrabold text-emerald-400 font-mono">[[ simFormatLarge(sim.computed.gains) ]]</div>
+                                        <div class="text-xs text-emerald-400/70 font-mono mt-0.5">[[ sim.computed.multiplier ]]x return</div>
+                                    </div>
+                                    <div class="glass-panel p-5 border-t-2 border-t-red-500">
+                                        <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Inflation-Adjusted Value</div>
+                                        <div class="text-2xl font-extrabold text-red-400 font-mono">[[ simFormatLarge(sim.computed.realValue) ]]</div>
+                                        <div class="text-xs text-slate-500 font-mono mt-0.5">in today's rupees</div>
+                                    </div>
+                                </div>
 
-                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                                <div class="flex items-start space-x-3">
-                                    <i class="fas fa-robot text-blue-400 mt-1"></i>
-                                    <div>
-                                        <div class="text-xs font-bold text-blue-400 uppercase mb-1">AI Advisor Says
+                                <!-- Chart -->
+                                <div class="glass-panel p-5 h-[320px]">
+                                    <canvas id="simGrowthChart"></canvas>
+                                </div>
+
+                                <!-- AI Insight -->
+                                <div class="glass-panel p-5 border-l-4 border-l-purple-500">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-brain text-purple-400"></i>
                                         </div>
-                                        <p class="text-sm text-slate-300 leading-relaxed">[[ sim.results.advice ]]</p>
+                                        <div>
+                                            <div class="text-xs font-bold text-purple-400 uppercase mb-1">AI Wealth Insight</div>
+                                            <p class="text-sm text-slate-300 leading-relaxed">[[ sim.computed.insight ]]</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -576,9 +622,12 @@
                         chart: { labels: [], data: [] }
                     },
                     sim: {
-                        cost: 15000,
-                        monthly: 450,
-                        results: null
+                        lumpSum: 500000,
+                        monthly: 10000,
+                        years: 10,
+                        cagr: 12,
+                        inflation: 6,
+                        computed: null
                     },
                     charts: {
                         main: null,
@@ -694,54 +743,119 @@
                         }
                     });
                 },
-                async runSimulation() {
-                    console.log("Running simulation...");
-                    const res = await fetch('/api/simulation', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cost: this.sim.cost, monthly: this.sim.monthly })
-                    });
-                    this.sim.results = await res.json();
+                runLocalSimulation() {
+                    const { lumpSum, monthly, years, cagr, inflation } = this.sim;
+                    const r = cagr / 100;
+                    const monthlyRate = r / 12;
+                    const totalMonths = years * 12;
 
-                    this.$nextTick(() => {
-                        this.initSimChart();
-                    });
+                    // Future value of lump sum
+                    const fvLump = lumpSum * Math.pow(1 + r, years);
+                    // Future value of SIP (annuity formula)
+                    const fvSIP = monthlyRate > 0 ? monthly * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate) : monthly * totalMonths;
+                    const total = fvLump + fvSIP;
+                    const invested = lumpSum + (monthly * totalMonths);
+                    const gains = total - invested;
+                    const realValue = total / Math.pow(1 + inflation / 100, years);
+                    const multiplier = invested > 0 ? (total / invested).toFixed(1) : '0';
+
+                    // Year-by-year data for chart
+                    const labels = [];
+                    const investedData = [];
+                    const gainsData = [];
+                    for (let y = 1; y <= years; y++) {
+                        labels.push('Year ' + y);
+                        const fvL = lumpSum * Math.pow(1 + r, y);
+                        const fvS = monthlyRate > 0 ? monthly * ((Math.pow(1 + monthlyRate, y * 12) - 1) / monthlyRate) * (1 + monthlyRate) : monthly * y * 12;
+                        const totalY = fvL + fvS;
+                        const investedY = lumpSum + (monthly * y * 12);
+                        investedData.push(Math.round(investedY));
+                        gainsData.push(Math.round(totalY - investedY));
+                    }
+
+                    // Smart insight
+                    let insight = '';
+                    if (total >= 10000000) {
+                        insight = `Incredible! Your portfolio could grow to ₹${(total/10000000).toFixed(1)} Crore. That's ${multiplier}x your investment! `;
+                    } else if (total >= 100000) {
+                        insight = `Your portfolio could grow to ₹${(total/100000).toFixed(1)} Lakh — a ${multiplier}x return. `;
+                    } else {
+                        insight = `Your portfolio reaches ₹${Math.round(total).toLocaleString('en-IN')} — a ${multiplier}x return. `;
+                    }
+                    if (inflation > 0) {
+                        const purchasingPowerLoss = ((1 - realValue / total) * 100).toFixed(0);
+                        insight += `However, inflation at ${inflation}% erodes ${purchasingPowerLoss}% of purchasing power. In today's rupees, your corpus is worth ₹${(realValue/100000).toFixed(1)} Lakh. `;
+                    }
+                    if (monthly > 0 && years >= 10) {
+                        insight += `Consistency is key — your ₹${monthly.toLocaleString('en-IN')}/month SIP contributes ₹${(fvSIP/100000).toFixed(1)} Lakh thanks to compounding.`;
+                    }
+
+                    this.sim.computed = {
+                        total: Math.round(total),
+                        invested: Math.round(invested),
+                        gains: Math.round(gains),
+                        realValue: Math.round(realValue),
+                        multiplier,
+                        insight,
+                        labels,
+                        investedData,
+                        gainsData
+                    };
+
+                    this.$nextTick(() => this.initSimGrowthChart());
                 },
-                initSimChart() {
-                    const ctx = document.getElementById('simChart').getContext('2d');
+                simFormatLarge(val) {
+                    if (val >= 10000000) return '₹' + (val / 10000000).toFixed(2) + ' Cr';
+                    if (val >= 100000) return '₹' + (val / 100000).toFixed(2) + ' L';
+                    return '₹' + val.toLocaleString('en-IN');
+                },
+                initSimGrowthChart() {
+                    const ctx = document.getElementById('simGrowthChart');
+                    if (!ctx) return;
                     if (this.charts.sim) this.charts.sim.destroy();
 
-                    this.charts.sim = new Chart(ctx, {
-                        type: 'line',
+                    this.charts.sim = new Chart(ctx.getContext('2d'), {
+                        type: 'bar',
                         data: {
-                            labels: this.sim.results.labels,
+                            labels: this.sim.computed.labels,
                             datasets: [
                                 {
-                                    label: 'Current Path',
-                                    data: this.sim.results.base_trend,
-                                    borderColor: '#22C55E', // Green
-                                    borderDash: [5, 5],
-                                    borderWidth: 2,
-                                    pointRadius: 0,
-                                    tension: 0.4
+                                    label: 'Amount Invested',
+                                    data: this.sim.computed.investedData,
+                                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                                    borderRadius: 4,
+                                    barPercentage: 0.7
                                 },
                                 {
-                                    label: 'New Scenario',
-                                    data: this.sim.results.sim_trend,
-                                    borderColor: '#EF4444', // Red
-                                    borderWidth: 3,
-                                    tension: 0.4,
-                                    pointBackgroundColor: '#EF4444'
+                                    label: 'Gains (Compounding)',
+                                    data: this.sim.computed.gainsData,
+                                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                    borderRadius: 4,
+                                    barPercentage: 0.7
                                 }
                             ]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { labels: { color: '#CBD5E1' } } },
+                            plugins: {
+                                legend: { labels: { color: '#94A3B8', font: { size: 11 } } },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => ctx.dataset.label + ': ₹' + ctx.raw.toLocaleString('en-IN')
+                                    }
+                                }
+                            },
                             scales: {
-                                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94A3B8' } },
-                                x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                                x: { stacked: true, grid: { display: false }, ticks: { color: '#64748B', font: { size: 10 } } },
+                                y: {
+                                    stacked: true,
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: {
+                                        color: '#64748B',
+                                        callback: (v) => v >= 10000000 ? (v/10000000).toFixed(0) + 'Cr' : v >= 100000 ? (v/100000).toFixed(0) + 'L' : v.toLocaleString('en-IN')
+                                    }
+                                }
                             }
                         }
                     });
