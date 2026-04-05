@@ -1,271 +1,433 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliVest Academy</title>
-
+    <title>IntelliVest Academy — Masterclass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         [v-cloak] { display: none !important; }
         body { font-family: 'Outfit', sans-serif; background-color: #0B0E14; color: #E2E8F0; }
-        .glass-panel { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(12px); border-radius: 1rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass-panel:hover { transform: translateY(-8px); border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.15); }
-        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .text-gradient { background: linear-gradient(135deg, #A855F7, #3B82F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        /* Custom styled range slider */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #A855F7; cursor: pointer; margin-top: -10px; box-shadow: 0 0 15px rgba(168, 85, 247, 0.6); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
-        .currency-input::-webkit-outer-spin-button, .currency-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Scroll progress bar */
+        #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #A855F7, #3B82F6, #06B6D4); z-index: 999; transition: width 0.1s linear; }
+
+        .glass-panel { background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(14px); border-radius: 1rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-panel:hover { transform: translateY(-6px); box-shadow: 0 24px 48px -12px rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.3); }
+
+        .fade-in { animation: fadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+        .text-gradient { background: linear-gradient(135deg, #A855F7, #3B82F6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .text-gradient-gold { background: linear-gradient(135deg, #F59E0B, #EF4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: #A855F7; cursor: pointer; margin-top: -9px; box-shadow: 0 0 12px rgba(168, 85, 247, 0.7); border: 2px solid #fff; }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; cursor: pointer; background: linear-gradient(90deg, #A855F7, #334155); border-radius: 2px; }
+
+        /* Quiz */
+        .quiz-option { border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 0.75rem; padding: 0.875rem 1.25rem; cursor: pointer; transition: all 0.25s ease; background: rgba(30, 41, 59, 0.3); }
+        .quiz-option:hover { border-color: rgba(168, 85, 247, 0.5); background: rgba(168, 85, 247, 0.08); }
+        .quiz-option.selected { border-color: #A855F7; background: rgba(168, 85, 247, 0.15); box-shadow: 0 0 0 1px rgba(168,85,247,0.4); }
+
+        /* Animated counter */
+        .counter { font-variant-numeric: tabular-nums; }
+
+        /* Module badge */
+        .module-badge { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
     </style>
 </head>
-
 <body class="h-screen flex overflow-hidden">
+
+    <!-- Scroll progress bar -->
+    <div id="progress-bar" style="width: 0%"></div>
+
     <div id="app" class="flex w-full h-full" v-cloak>
         <!-- Sidebar -->
         <aside class="hidden lg:flex lg:w-64 flex-shrink-0 border-r border-slate-800 bg-[#0F1219] flex-col">
             <div class="h-20 flex items-center px-6 border-b border-slate-800">
-                <i class="fas fa-bolt text-2xl text-purple-500 hover:rotate-12 transition-transform"></i>
+                <i class="fas fa-bolt text-2xl text-purple-500"></i>
                 <span class="ml-3 text-xl font-bold">IntelliVest</span>
             </div>
-            <nav class="flex-1 py-6 px-4 space-y-2">
-                <a href="/" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
-                    <i class="fas fa-chart-line w-8 text-center text-lg"></i> Overview
+            <nav class="flex-1 py-6 px-4 space-y-1">
+                <a href="/" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors text-sm">
+                    <i class="fas fa-chart-line w-8 text-center"></i> Overview
                 </a>
-                <a href="/market" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
-                    <i class="fas fa-chart-bar w-8 text-center text-lg"></i> Market (BSE)
+                <a href="/market" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors text-sm">
+                    <i class="fas fa-chart-bar w-8 text-center"></i> Market (BSE)
                 </a>
-                <a href="/budgets" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
-                    <i class="fas fa-wallet w-8 text-center text-lg"></i> Budgets
+                <a href="/budgets" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors text-sm">
+                    <i class="fas fa-wallet w-8 text-center"></i> Budgets
                 </a>
-                <a href="/invest" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors">
-                    <i class="fas fa-magic w-8 text-center text-lg"></i> AI Advisor
+                <a href="/invest" class="flex items-center p-3 rounded-xl text-slate-400 hover:bg-slate-800 transition-colors text-sm">
+                    <i class="fas fa-magic w-8 text-center"></i> AI Advisor
                 </a>
-                <a href="/academy" class="flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 font-bold border border-purple-500/20 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]">
-                    <i class="fas fa-graduation-cap w-8 text-center text-lg"></i> Academy
+                <a href="/academy" class="flex items-center p-3 rounded-xl bg-purple-500/10 text-purple-400 font-semibold border border-purple-500/20 text-sm">
+                    <i class="fas fa-graduation-cap w-8 text-center"></i> Academy
                 </a>
             </nav>
             <div class="p-4 border-t border-slate-800 mt-auto">
-                <div class="bg-slate-800/50 p-4 rounded-xl border border-white/5 cursor-pointer hover:bg-slate-800 transition-colors shadow-lg">
+                <div class="bg-slate-800/50 p4 rounded-xl border border-white/5 p-4">
                     <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-purple-500/50">
-                            {{ session.initials }}
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-xs font-bold text-white">
+                            [[ session.initials ]]
                         </div>
                         <div class="overflow-hidden">
-                            <div class="text-sm font-semibold truncate">{{ session.name }}</div>
-                            <div class="text-[10px] text-slate-400 truncate">{{ session.user }}</div>
+                            <div class="text-sm font-semibold truncate">[[ session.name ]]</div>
+                            <div class="text-[10px] text-slate-400 truncate">[[ session.user ]]</div>
                         </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-            <header class="h-20 border-b border-slate-800 flex items-center px-8 bg-[#0B0E14]/80 backdrop-blur-xl z-20 sticky top-0 shadow-lg">
+        <!-- Main -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="h-20 border-b border-slate-800 flex items-center justify-between px-6 lg:px-8 bg-[#0B0E14]/90 backdrop-blur-xl z-20 sticky top-0 shadow-xl flex-shrink-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-white flex items-center">
-                        <i class="fas fa-graduation-cap text-purple-500 mr-3"></i> IntelliVest Masterclass
+                    <h1 class="text-xl lg:text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fas fa-graduation-cap text-purple-500"></i> IntelliVest Masterclass
                     </h1>
-                    <p class="text-xs text-slate-400">Advanced mechanics of capital preservation & psychology.</p>
+                    <p class="text-xs text-slate-400 hidden sm:block">5 Modules · Advanced Financial Architecture & Psychology</p>
                 </div>
-                <div class="ml-auto">
-                    <a href="/invest" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all transform hover:scale-105 border border-purple-400/30">
-                        Apply to Portfolio <i class="fas fa-rocket ml-2"></i>
-                    </a>
-                </div>
+                <a href="/invest" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-bold rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.35)] border border-purple-400/30 hover:scale-105 transition-transform">
+                    Apply to Portfolio <i class="fas fa-rocket ml-1"></i>
+                </a>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0B0E14] z-10 scroll-smooth">
-                <div class="max-w-6xl mx-auto space-y-12 pb-24">
-                    
-                    <!-- Title Section -->
-                    <div class="text-center py-12 fade-in relative">
-                        <div class="absolute inset-x-0 top-0 h-64 bg-purple-500/10 blur-[100px] -z-10 rounded-full"></div>
-                        <h2 class="text-4xl lg:text-6xl font-extrabold mb-6 text-white tracking-tight">The Architecture of <span class="text-gradient">Wealth</span></h2>
-                        <p class="text-slate-400 max-w-2xl mx-auto text-lg lg:text-xl font-light leading-relaxed">
-                            Move beyond basic advice. Interface directly with the fundamental mechanics that institutional investors use to analyze risk, exploit cognitive biases, and weaponize compound interest.
+            <div id="scroll-container" class="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0B0E14]">
+                <div class="max-w-6xl mx-auto space-y-10 pb-28">
+
+                    <!-- Hero -->
+                    <div class="text-center py-10 lg:py-16 fade-in relative">
+                        <div class="absolute inset-x-0 top-0 h-72 bg-purple-600/8 blur-[120px] -z-10 rounded-full pointer-events-none"></div>
+                        <div class="module-badge bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-5">5 Modules • Interactive Simulators • Self-Assessment Quiz</div>
+                        <h2 class="text-4xl lg:text-6xl font-extrabold text-white tracking-tight mb-5 leading-tight">
+                            The Architecture of <span class="text-gradient">Wealth</span>
+                        </h2>
+                        <p class="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed font-light">
+                            Stop reading "tips." Understand the mathematical, psychological, and mechanical foundations that institutional investors use to build lasting wealth.
                         </p>
+                        <div class="flex justify-center gap-8 mt-8 text-center">
+                            <div><div class="text-2xl font-bold text-purple-400">5</div><div class="text-xs text-slate-500 uppercase tracking-wider">Modules</div></div>
+                            <div class="border-r border-slate-800"></div>
+                            <div><div class="text-2xl font-bold text-blue-400">3</div><div class="text-xs text-slate-500 uppercase tracking-wider">Simulators</div></div>
+                            <div class="border-r border-slate-800"></div>
+                            <div><div class="text-2xl font-bold text-emerald-400">1</div><div class="text-xs text-slate-500 uppercase tracking-wider">Quiz</div></div>
+                        </div>
                     </div>
 
-                    <!-- Module 1: Inflation -->
-                    <div class="glass-panel p-8 fade-in border-t-4 border-t-red-500 relative overflow-hidden group">
-                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform">
-                            <i class="fas fa-fire fa-10x"></i>
+                    <!-- MODULE I: Inflation -->
+                    <div class="glass-panel p-7 lg:p-10 fade-in border-t-4 border-t-red-500 relative overflow-hidden group">
+                        <div class="absolute -right-8 -top-8 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 transform text-red-400">
+                            <i class="fas fa-fire fa-[10x] text-[10rem]"></i>
                         </div>
-                        <div class="flex items-start space-x-6 relative z-10">
-                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0 border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                                <i class="fas fa-chart-line text-2xl text-red-400"></i>
+                        <div class="flex items-start gap-6 relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0 border border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                                <i class="fas fa-fire text-xl text-red-400"></i>
                             </div>
-                            <div>
-                                <div class="inline-block px-3 py-1 bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider rounded-full mb-3 border border-red-500/20">Module I</div>
-                                <h3 class="text-3xl font-bold text-white mb-3">The Macroeconomics of Inflation</h3>
-                                <p class="text-slate-300 leading-relaxed mb-4 text-lg font-light">
-                                    Holding fiat currency (rupees, dollars) is a mathematically guaranteed loss of purchasing power over time. Central banks systematically inject liquidity into the economy, decreasing the discrete value of every circulating unit.
+                            <div class="flex-1">
+                                <div class="module-badge bg-red-500/10 text-red-400 border border-red-500/20 mb-3">Module I</div>
+                                <h3 class="text-2xl lg:text-3xl font-bold text-white mb-3">The Macroeconomics of Inflation</h3>
+                                <p class="text-slate-300 leading-relaxed mb-4 text-base font-light">
+                                    Holding fiat currency is a <strong class="text-white">mathematically guaranteed loss</strong> of purchasing power. Central banks systematically inject liquidity, decreasing the value of every rupee in circulation.
                                 </p>
                                 <p class="text-slate-400 text-sm leading-relaxed mb-6">
-                                    <strong class="text-white">The Imperative:</strong> Investing is not an optional "risk" you take to get rich; it is a mandatory defensive structure required to maintain your current standard of living. If the true inflation rate is 6%, any capital sitting in a savings account yielding 3% is eroding in real purchasing power.
+                                    Investing is not an optional risk for wealth creation — it is a mandatory defensive mechanism to <em>preserve</em> what you already have. A savings account at 3% yield during 6% inflation yields a net <strong class="text-red-400">-3% real return</strong>.
                                 </p>
-                                <div class="bg-black/30 p-5 rounded-xl border border-red-900/30 text-sm font-mono text-red-200/80 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
-                                    <i class="fas fa-code-branch text-red-500 mr-2"></i> Equation: Real Return = Nominal Return - Inflation Rate.<br>
-                                    <span class="mt-2 block pl-6 text-slate-400 text-xs text-red-300/50"># A 10% stock market return during 6% inflation yields a marginal 4% true wealth increase.</span>
+                                <div class="bg-black/40 p-5 rounded-xl border border-red-900/30 font-mono text-sm shadow-inner">
+                                    <div class="text-red-400/90"><i class="fas fa-code mr-2 text-red-500"></i>Fisher Equation: <span class="text-white">Real Return ≈ Nominal Return − Inflation Rate</span></div>
+                                    <div class="mt-2 pl-6 text-slate-500 text-xs"># 10% BSE return during 6% CPI inflation → only 4% real purchasing power gain</div>
+                                    <div class="mt-1 pl-6 text-slate-500 text-xs"># 3% FD during 6% CPI → -3% real return (you are losing money in real terms)</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Module 2: Mechanics -->
-                    <div class="glass-panel p-8 fade-in border-t-4 border-t-blue-500 relative overflow-hidden group" style="animation-delay: 0.1s;">
-                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:-rotate-12 transform">
-                            <i class="fas fa-cogs fa-10x"></i>
+                    <!-- MODULE II: Market Mechanics -->
+                    <div class="glass-panel p-7 lg:p-10 fade-in border-t-4 border-t-blue-500 relative overflow-hidden group" style="animation-delay:0.1s">
+                        <div class="absolute -right-8 -top-8 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:-rotate-12 transform text-blue-400">
+                            <i class="fas fa-cogs text-[10rem]"></i>
                         </div>
-                        <div class="flex flex-col lg:flex-row items-start gap-10 relative z-10">
-                            <div class="lg:w-2/3">
-                                <div class="flex items-center space-x-5 mb-6">
-                                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                                        <i class="fas fa-building text-2xl text-blue-400"></i>
+                        <div class="flex flex-col lg:flex-row gap-10 relative z-10">
+                            <div class="lg:w-3/5">
+                                <div class="flex items-center gap-5 mb-5">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                                        <i class="fas fa-building text-xl text-blue-400"></i>
                                     </div>
                                     <div>
-                                        <div class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full mb-1 border border-blue-500/20">Module II</div>
-                                        <h3 class="text-3xl font-bold text-white">Market Mechanics & Valuations</h3>
+                                        <div class="module-badge bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-1">Module II</div>
+                                        <h3 class="text-2xl lg:text-3xl font-bold text-white">Market Mechanics & Valuations</h3>
                                     </div>
                                 </div>
-                                <p class="text-slate-300 leading-relaxed mb-6 font-light text-lg">
-                                    Equity fundamentally represents fractional ownership of a corporation's future Free Cash Flows (FCF). It is not a magical chart.
+                                <p class="text-slate-300 leading-relaxed mb-5 font-light">
+                                    A share of stock is a claim on a fraction of a company's future <strong class="text-white">Free Cash Flows (FCF)</strong>. The price you pay is a vote of confidence in those future earnings — nothing more.
                                 </p>
-                                <ul class="space-y-5">
-                                    <li class="flex items-start">
-                                        <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 mt-1 border border-blue-500/30 flex-shrink-0">
-                                            <i class="fas fa-exchange-alt text-blue-400 text-xs"></i>
-                                        </div>
+                                <div class="space-y-4">
+                                    <div class="flex items-start gap-4 bg-black/20 p-4 rounded-xl">
+                                        <i class="fas fa-exchange-alt text-blue-400 mt-1 w-5 text-center flex-shrink-0"></i>
                                         <div>
-                                            <strong class="text-white block text-lg mb-1">Order Books & Liquidity</strong>
-                                            <span class="text-slate-400 text-sm leading-relaxed">Prices change via the Bid-Ask spread. There is no central price algorithm; prices only move because a buyer physically executes an order against an opposing seller's limit order, consuming "liquidity" on the book.</span>
+                                            <strong class="text-white block mb-1">Order Books & Liquidity</strong>
+                                            <span class="text-slate-400 text-sm leading-relaxed">Prices are set by the intersection of Bid (buyers) and Ask (sellers) orders. Every market move is the result of a real human or algorithm physically consuming liquidity from the order book.</span>
                                         </div>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-4 mt-1 border border-blue-500/30 flex-shrink-0">
-                                            <i class="fas fa-chart-pie text-blue-400 text-xs"></i>
-                                        </div>
-                                        <div>
-                                            <strong class="text-white block text-lg mb-1">Market Capitalization</strong>
-                                            <span class="text-slate-400 text-sm leading-relaxed">Price × Outstanding Shares. This dictates the actual size of the company. A ₹10 stock with 1 billion shares is inherently a larger company than a ₹5,000 stock with 1 million shares.</span>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="lg:w-1/3 w-full bg-black/40 border border-slate-700/50 rounded-2xl p-5 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)]">
-                                <h4 class="text-xs uppercase font-bold text-blue-400 mb-4 border-b border-slate-800 pb-3 flex items-center"><i class="fas fa-server mr-2"></i> Live L2 Order Book Sim</h4>
-                                <div class="space-y-2 font-mono text-[13px]">
-                                    <div class="flex justify-between text-red-400 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.50</span><span class="opacity-70">600 Vol</span></div>
-                                    <div class="flex justify-between text-red-500 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.25</span><span class="opacity-70">120 Vol</span></div>
-                                    <div class="flex justify-between text-red-600 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Ask</span><span>₹4500.10</span><span class="opacity-70">200 Vol</span></div>
-                                    
-                                    <div class="relative py-3">
-                                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-800 border-dashed"></div></div>
-                                        <div class="relative flex justify-center"><span class="bg-[#0B0E14] px-3 font-bold text-white text-xs tracking-widest bg-slate-900 border border-slate-700 rounded-full py-1">SPREAD ₹0.10</span></div>
                                     </div>
-                                    
-                                    <div class="flex justify-between text-green-500 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4500.00</span><span class="opacity-70">850 Vol</span></div>
-                                    <div class="flex justify-between text-green-600 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4499.75</span><span class="opacity-70">1400 Vol</span></div>
-                                    <div class="flex justify-between text-green-700 hover:bg-slate-800/50 px-2 py-1 rounded transition-colors"><span>Bid</span><span>₹4499.50</span><span class="opacity-70">3100 Vol</span></div>
+                                    <div class="flex items-start gap-4 bg-black/20 p-4 rounded-xl">
+                                        <i class="fas fa-chart-pie text-blue-400 mt-1 w-5 text-center flex-shrink-0"></i>
+                                        <div>
+                                            <strong class="text-white block mb-1">P/E Ratio & Intrinsic Value</strong>
+                                            <span class="text-slate-400 text-sm leading-relaxed">Price-to-Earnings tells you how many years of current earnings the market is willing to pay. A P/E of 30 means investors expect 30 years of earnings at current rates — or strong future growth. It is not a price tag; it is a growth expectation contract.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Live L2 Order Book -->
+                            <div class="lg:w-2/5 bg-black/50 border border-slate-700/50 rounded-2xl p-5 shadow-inner">
+                                <h4 class="text-xs uppercase font-bold text-blue-400 mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
+                                    <i class="fas fa-server"></i> Live L2 Order Book Simulation
+                                </h4>
+                                <div class="space-y-1 font-mono text-[12px]">
+                                    <div class="flex justify-between text-red-400 hover:bg-red-500/5 px-2 py-1.5 rounded transition-colors"><span>ASK</span><span class="font-bold">₹4,500.50</span><span class="opacity-60">600 Qt</span></div>
+                                    <div class="flex justify-between text-red-500 hover:bg-red-500/5 px-2 py-1.5 rounded transition-colors"><span>ASK</span><span class="font-bold">₹4,500.25</span><span class="opacity-60">120 Qt</span></div>
+                                    <div class="flex justify-between text-red-600 hover:bg-red-500/5 px-2 py-1.5 rounded transition-colors"><span>ASK</span><span class="font-bold">₹4,500.10</span><span class="opacity-60">200 Qt</span></div>
+                                    <div class="relative py-3">
+                                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-700 border-dashed"></div></div>
+                                        <div class="relative flex justify-center"><span class="bg-slate-900 px-3 py-0.5 text-[11px] font-bold text-white border border-slate-600 rounded-full">SPREAD ₹0.10</span></div>
+                                    </div>
+                                    <div class="flex justify-between text-green-500 hover:bg-green-500/5 px-2 py-1.5 rounded transition-colors"><span>BID</span><span class="font-bold">₹4,500.00</span><span class="opacity-60">850 Qt</span></div>
+                                    <div class="flex justify-between text-green-600 hover:bg-green-500/5 px-2 py-1.5 rounded transition-colors"><span>BID</span><span class="font-bold">₹4,499.75</span><span class="opacity-60">1,400 Qt</span></div>
+                                    <div class="flex justify-between text-green-700 hover:bg-green-500/5 px-2 py-1.5 rounded transition-colors"><span>BID</span><span class="font-bold">₹4,499.50</span><span class="opacity-60">3,100 Qt</span></div>
+                                </div>
+                                <p class="text-[10px] text-slate-600 mt-4 text-center uppercase tracking-widest">Simulated NIFTY Futures Book</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE III: Behavioral Finance -->
+                    <div class="glass-panel p-7 lg:p-10 fade-in border-t-4 border-t-emerald-500 relative overflow-hidden group" style="animation-delay:0.15s">
+                        <div class="absolute -right-8 -top-8 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 transform text-emerald-400">
+                            <i class="fas fa-brain text-[10rem]"></i>
+                        </div>
+                        <div class="flex items-start gap-6 relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                                <i class="fas fa-brain text-xl text-emerald-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="module-badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-3">Module III</div>
+                                <h3 class="text-2xl lg:text-3xl font-bold text-white mb-3">Behavioral Finance & Cognitive Biases</h3>
+                                <p class="text-slate-300 leading-relaxed mb-6 font-light">
+                                    The mathematics of investing is simple. The psychology is what <strong class="text-white">destroys 90% of retail investors</strong>. Your brain is literally wired to make terrible investment decisions.
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div class="bg-black/30 p-5 rounded-2xl border border-emerald-900/30 hover:border-emerald-700/40 transition-colors">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center gap-2 text-sm"><i class="fas fa-sad-tear text-base"></i> Loss Aversion (Kahneman)</div>
+                                        <p class="text-xs text-slate-400 leading-relaxed">The emotional pain of losing ₹1,00,000 is psychologically <strong class="text-white">2× more intense</strong> than the joy of gaining ₹1,00,000. This causes investors to panic sell structurally sound assets at market lows, permanently destroying capital.</p>
+                                    </div>
+                                    <div class="bg-black/30 p-5 rounded-2xl border border-emerald-900/30 hover:border-emerald-700/40 transition-colors">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center gap-2 text-sm"><i class="fas fa-filter text-base"></i> Confirmation Bias</div>
+                                        <p class="text-xs text-slate-400 leading-relaxed">Investors actively seek out news articles and opinions confirming what they already believe, while unconsciously filtering out contradictory earnings data. The market has no bias — it processes all information equally and mercilessly.</p>
+                                    </div>
+                                    <div class="bg-black/30 p-5 rounded-2xl border border-emerald-900/30 hover:border-emerald-700/40 transition-colors">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center gap-2 text-sm"><i class="fas fa-anchor text-base"></i> Anchoring</div>
+                                        <p class="text-xs text-slate-400 leading-relaxed">When you buy a stock at ₹500 and it drops to ₹300, you become psychologically anchored to your purchase price. This "I'll sell when it gets back to ₹500" thinking ignores whether the fundamentals have structurally changed.</p>
+                                    </div>
+                                    <div class="bg-black/30 p-5 rounded-2xl border border-emerald-900/30 hover:border-emerald-700/40 transition-colors">
+                                        <div class="text-emerald-400 font-bold mb-2 flex items-center gap-2 text-sm"><i class="fas fa-users text-base"></i> Herd Mentality</div>
+                                        <p class="text-xs text-slate-400 leading-relaxed">When everyone is buying (euphoria), you feel compelled to join. When everyone is selling (panic), fear forces you out. Institutional investors systematically profit from this predictable retail behavior — buying fear, selling greed.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Module 3: Behavioral Finance -->
-                    <div class="glass-panel p-8 fade-in border-t-4 border-t-emerald-500 relative overflow-hidden group" style="animation-delay: 0.2s;">
-                        <div class="absolute -right-10 -top-10 opacity-5 group-hover:opacity-10 transition-opacity duration-500 group-hover:scale-110 transform">
-                            <i class="fas fa-brain fa-10x"></i>
+                    <!-- MODULE IV: MPT + Efficient Frontier -->
+                    <div class="glass-panel p-7 lg:p-10 fade-in border-t-4 border-t-yellow-500 relative overflow-hidden group" style="animation-delay:0.2s">
+                        <div class="absolute -right-8 -top-8 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:rotate-6 transform text-yellow-400">
+                            <i class="fas fa-project-diagram text-[10rem]"></i>
                         </div>
-                        <div class="flex items-start space-x-6 relative z-10">
-                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                                <i class="fas fa-user-shield text-2xl text-emerald-400"></i>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-5 mb-6">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0 border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.15)]">
+                                    <i class="fas fa-project-diagram text-xl text-yellow-400"></i>
+                                </div>
+                                <div>
+                                    <div class="module-badge bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 mb-1">Module IV</div>
+                                    <h3 class="text-2xl lg:text-3xl font-bold text-white">Modern Portfolio Theory & The Efficient Frontier</h3>
+                                </div>
+                            </div>
+                            <p class="text-slate-300 leading-relaxed mb-6 font-light max-w-3xl">
+                                Harry Markowitz proved mathematically in 1952 that you can reduce portfolio risk <strong class="text-white">without sacrificing return</strong> — simply by combining assets whose prices don't move in perfect sync. This is the mathematical foundation of all institutional money management.
+                            </p>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <div class="space-y-4">
+                                    <div class="bg-black/30 p-4 rounded-xl border border-yellow-900/30">
+                                        <strong class="text-white block mb-1 text-sm">The Sharpe Ratio</strong>
+                                        <p class="text-xs text-slate-400 leading-relaxed">Measures return earned per unit of risk taken. A Sharpe > 1 is considered good. A Sharpe > 2 is exceptional. The formula: <span class="font-mono text-yellow-400">(Rp − Rf) / σp</span> where Rf is the risk-free rate (G-Sec yield).</p>
+                                    </div>
+                                    <div class="bg-black/30 p-4 rounded-xl border border-yellow-900/30">
+                                        <strong class="text-white block mb-1 text-sm">Correlation & Diversification</strong>
+                                        <p class="text-xs text-slate-400 leading-relaxed">Assets with correlation = -1 perfectly cancel each other's risk. Gold and equities during market crashes tend toward negative correlation, which is why every institutional portfolio holds both.</p>
+                                    </div>
+                                    <div class="bg-black/30 p-4 rounded-xl border border-yellow-900/30">
+                                        <strong class="text-white block mb-1 text-sm">Systematic vs Unsystematic Risk</strong>
+                                        <p class="text-xs text-slate-400 leading-relaxed">Systematic risk (market risk, macroeconomic shocks) cannot be diversified away. Unsystematic risk (company-specific risk) is entirely eliminated through diversification — holding 20+ stocks eliminates ~95% of it.</p>
+                                    </div>
+                                </div>
+                                <div class="relative h-[320px]">
+                                    <canvas id="frontierChart"></canvas>
+                                    <p class="text-center text-[10px] text-slate-600 uppercase tracking-widest mt-2">The Efficient Frontier — Risk vs Expected Return</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE V: Compounding Simulator (INTERACTIVE) -->
+                    <div class="glass-panel p-7 lg:p-12 fade-in border-t-4 border-t-purple-500 relative overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.08)]" style="animation-delay:0.25s">
+                        <div class="relative z-10">
+                            <div class="flex flex-col lg:flex-row gap-10 items-start">
+                                <div class="lg:w-1/2">
+                                    <div class="module-badge bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-4">Module V — Interactive Simulator</div>
+                                    <h3 class="text-3xl lg:text-4xl font-extrabold text-white mb-4">Weaponizing <span class="text-gradient">Time</span></h3>
+                                    <p class="text-slate-300 leading-relaxed mb-8 font-light">
+                                        Einstein called compound interest the 8th wonder of the world. Drag the sliders to see why time — not the amount you invest — is the true lever of extraordinary wealth.
+                                    </p>
+                                    <div class="space-y-7 bg-black/40 p-6 rounded-2xl border border-slate-700/50">
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <label class="text-sm font-semibold text-slate-300">Monthly SIP</label>
+                                                <span class="text-purple-400 font-bold text-base counter">₹[[ formatPrice(sim.monthly) ]]</span>
+                                            </div>
+                                            <input type="range" v-model="sim.monthly" min="1000" max="250000" step="1000" @change="updateSimChart">
+                                            <div class="flex justify-between text-[10px] text-slate-600 mt-1"><span>₹1K</span><span>₹2.5L</span></div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <label class="text-sm font-semibold text-slate-300">Time Horizon</label>
+                                                <span class="text-blue-400 font-bold text-base counter">[[ sim.years ]] Years</span>
+                                            </div>
+                                            <input type="range" v-model="sim.years" min="1" max="40" step="1" @change="updateSimChart">
+                                            <div class="flex justify-between text-[10px] text-slate-600 mt-1"><span>1yr</span><span>40yrs</span></div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <label class="text-sm font-semibold text-slate-300">Expected CAGR</label>
+                                                <span class="text-emerald-400 font-bold text-base counter">[[ sim.rate ]]%</span>
+                                            </div>
+                                            <input type="range" v-model="sim.rate" min="2" max="25" step="1" @change="updateSimChart">
+                                            <div class="flex justify-between text-[10px] text-slate-600 mt-1"><span>2%</span><span>25%</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats -->
+                                    <div class="grid grid-cols-2 gap-4 mt-5">
+                                        <div class="bg-black/50 border border-slate-700 rounded-xl p-4">
+                                            <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Total Invested</div>
+                                            <div class="text-xl font-bold font-mono text-slate-200">₹[[ formatPrice(calcPrincipal) ]]</div>
+                                        </div>
+                                        <div class="bg-gradient-to-br from-purple-900/40 to-blue-900/40 border border-purple-500/30 rounded-xl p-4 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+                                            <div class="text-xs text-purple-300 uppercase tracking-wider mb-1">Final Corpus</div>
+                                            <div class="text-2xl font-extrabold font-mono text-white">₹[[ formatPrice(calcTotal) ]]</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="lg:w-1/2 w-full h-[420px] relative">
+                                    <canvas id="compoundChart"></canvas>
+                                    <p class="text-center text-[10px] text-slate-600 uppercase tracking-widest mt-3">Principal (Grey) vs Compound Interest Earned (Purple)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE VI: Investor Archetype Quiz -->
+                    <div class="glass-panel p-7 lg:p-10 fade-in border-t-4 border-t-pink-500 relative overflow-hidden" style="animation-delay:0.3s">
+                        <div class="flex items-center gap-5 mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0 border border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
+                                <i class="fas fa-user-check text-xl text-pink-400"></i>
                             </div>
                             <div>
-                                <div class="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider rounded-full mb-3 border border-emerald-500/20">Module III</div>
-                                <h3 class="text-3xl font-bold text-white mb-3">Behavioral Finance</h3>
-                                <p class="text-slate-300 leading-relaxed mb-4 text-lg font-light">
-                                    The math is easy. The psychology is what destroys retail traders. Cognitive biases force humans to buy exactly at the top of bubbles (greed) and capitulate at the exact market bottoms (fear).
-                                </p>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                    <div class="bg-black/30 p-5 rounded-xl border border-slate-700/50">
-                                        <div class="text-emerald-400 font-bold mb-2 flex items-center"><i class="fas fa-sad-tear mr-2"></i> Loss Aversion</div>
-                                        <p class="text-sm text-slate-400 leading-relaxed">Psychologically, the pain of losing ₹100,000 feels twice as intense as the joy of gaining ₹100,000. This causes investors to panic sell structurally sound assets during temporary market corrections, crystallizing what was only a paper loss into permanent damage.</p>
-                                    </div>
-                                    <div class="bg-black/30 p-5 rounded-xl border border-slate-700/50">
-                                        <div class="text-emerald-400 font-bold mb-2 flex items-center"><i class="fas fa-filter mr-2"></i> Confirmation Bias</div>
-                                        <p class="text-sm text-slate-400 leading-relaxed">Investors seek out information (news, forums) that confirms what they already believe about a stock, actively ignoring massive red flags in financial statements. The market doesn't care about your opinion; respect the data.</p>
-                                    </div>
-                                </div>
+                                <div class="module-badge bg-pink-500/10 text-pink-400 border border-pink-500/20 mb-1">Module VI — Self Assessment</div>
+                                <h3 class="text-2xl lg:text-3xl font-bold text-white">Discover Your Investor Archetype</h3>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Module 4: The Compounding Simulator (INTERACTIVE) -->
-                    <div class="glass-panel p-8 md:p-12 fade-in border-t-4 border-t-purple-500 relative overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.1)]" style="animation-delay: 0.3s;">
-                        
-                        <div class="flex flex-col lg:flex-row gap-12 items-center relative z-10">
-                            <div class="lg:w-1/2">
-                                <div class="inline-block px-3 py-1 bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-wider rounded-full mb-4 border border-purple-500/20">Module IV - Interactive</div>
-                                <h3 class="text-3xl lg:text-4xl font-extrabold text-white mb-4">Weaponizing <span class="text-gradient">Time</span></h3>
-                                <p class="text-slate-300 leading-relaxed mb-8 text-lg font-light">
-                                    Albert Einstein allegedly called compound interest the 8th wonder of the world. Play with the simulator to see how time—not capital—is the ultimate lever of extreme wealth generation.
-                                </p>
-                                
-                                <div class="space-y-8 bg-black/40 p-6 rounded-2xl border border-slate-700/50">
-                                    <!-- Monthly Input -->
-                                    <div>
-                                        <div class="flex justify-between mb-2">
-                                            <label class="text-sm font-bold text-slate-300">Monthly Contribution</label>
-                                            <span class="text-purple-400 font-bold text-lg">₹[[ formatPrice(sim.monthly) ]]</span>
-                                        </div>
-                                        <input type="range" v-model="sim.monthly" min="1000" max="250000" step="1000" @change="updateSimChart">
-                                    </div>
-                                    
-                                    <!-- Years Input -->
-                                    <div>
-                                        <div class="flex justify-between mb-2">
-                                            <label class="text-sm font-bold text-slate-300">Time Horizon</label>
-                                            <span class="text-blue-400 font-bold text-lg">[[ sim.years ]] Years</span>
-                                        </div>
-                                        <input type="range" v-model="sim.years" min="1" max="40" step="1" @change="updateSimChart">
-                                    </div>
+                        <!-- Quiz Not Started / In Progress -->
+                        <div v-if="!quizCompleted">
+                            <p class="text-slate-400 text-sm mb-6">Answer [[ quiz.questions.length ]] questions to discover your investor psychology and receive a personalized asset allocation blueprint.</p>
 
-                                    <!-- APY Input -->
-                                    <div>
-                                        <div class="flex justify-between mb-2">
-                                            <label class="text-sm font-bold text-slate-300">Expected Annual Return</label>
-                                            <span class="text-emerald-400 font-bold text-lg">[[ sim.rate ]]% CAGR</span>
+                            <!-- Progress -->
+                            <div class="flex items-center gap-3 mb-8">
+                                <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-500" :style="'width:' + ((quiz.currentQ) / quiz.questions.length * 100) + '%'"></div>
+                                </div>
+                                <span class="text-xs text-slate-500 flex-shrink-0">[[ quiz.currentQ ]]/[[ quiz.questions.length ]]</span>
+                            </div>
+
+                            <!-- Question -->
+                            <div v-if="quiz.currentQ < quiz.questions.length">
+                                <h4 class="text-lg font-bold text-white mb-5">[[ quiz.currentQ + 1 ]]. [[ quiz.questions[quiz.currentQ].q ]]</h4>
+                                <div class="space-y-3">
+                                    <div v-for="(opt, i) in quiz.questions[quiz.currentQ].options" :key="i"
+                                        class="quiz-option flex items-center gap-4"
+                                        :class="{ selected: quiz.selectedAnswer === i }"
+                                        @click="quiz.selectedAnswer = i">
+                                        <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                                            :class="quiz.selectedAnswer === i ? 'border-purple-500 bg-purple-500' : 'border-slate-600'">
+                                            <i v-if="quiz.selectedAnswer === i" class="fas fa-check text-white text-[10px]"></i>
                                         </div>
-                                        <input type="range" v-model="sim.rate" min="2" max="25" step="1" @change="updateSimChart">
+                                        <span class="text-sm text-slate-300">[[ opt.text ]]</span>
+                                    </div>
+                                </div>
+                                <button @click="nextQuestion"
+                                    :disabled="quiz.selectedAnswer === null"
+                                    class="mt-6 px-8 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm font-bold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:from-pink-500 hover:to-purple-500 transition-all">
+                                    [[ quiz.currentQ === quiz.questions.length - 1 ? 'Get My Result' : 'Next Question' ]] <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quiz Result -->
+                        <div v-else class="fade-in">
+                            <div class="text-center mb-8">
+                                <div class="inline-block w-20 h-20 rounded-full mb-4 flex items-center justify-center text-3xl"
+                                    :class="quizResult.bgClass">
+                                    <i :class="quizResult.icon"></i>
+                                </div>
+                                <h4 class="text-3xl font-extrabold text-white mb-2">You are a <span :class="quizResult.textClass">[[ quizResult.title ]]</span></h4>
+                                <p class="text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">[[ quizResult.description ]]</p>
+                            </div>
+
+                            <!-- Allocation bars -->
+                            <div class="bg-black/40 p-6 rounded-2xl border border-slate-700/50 mb-6">
+                                <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-5">Recommended Asset Allocation Blueprint</h5>
+                                <div class="space-y-4">
+                                    <div v-for="alloc in quizResult.allocations" :key="alloc.label">
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm font-semibold text-white">[[ alloc.label ]]</span>
+                                            <span class="text-sm font-bold" :class="alloc.colorClass">[[ alloc.pct ]]%</span>
+                                        </div>
+                                        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full transition-all duration-1000"
+                                                :class="alloc.barClass"
+                                                :style="'width:' + alloc.pct + '%'">
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 mt-1">[[ alloc.note ]]</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="lg:w-1/2 w-full h-[500px] flex flex-col justify-end relative">
-                                <!-- Stats Header -->
-                                <div class="absolute top-0 left-0 right-0 z-10 grid grid-cols-2 gap-4">
-                                    <div class="bg-black/60 backdrop-blur-md border border-slate-700 rounded-xl p-4 shadow-xl">
-                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Principal Paid</div>
-                                        <div class="text-xl font-mono text-slate-200">₹[[ formatPrice(calcPrincipal) ]]</div>
-                                    </div>
-                                    <div class="bg-gradient-to-br from-purple-900/40 to-blue-900/40 backdrop-blur-md border border-purple-500/30 rounded-xl p-4 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                                        <div class="text-xs text-purple-300 font-bold uppercase tracking-wider mb-1">Final Wealth</div>
-                                        <div class="text-2xl font-mono text-white font-bold">₹[[ formatPrice(calcTotal) ]]</div>
-                                    </div>
-                                </div>
-                                <canvas id="compoundChart" class="mt-20"></canvas>
-                                <p class="text-center text-[10px] text-slate-500 uppercase tracking-widest mt-4">The Exponential Curve of Capital Growth</p>
+                            <div class="flex gap-4">
+                                <a href="/invest" class="flex-1 text-center py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:scale-105 transition-transform">
+                                    <i class="fas fa-rocket mr-2"></i>Apply This Allocation
+                                </a>
+                                <button @click="resetQuiz" class="px-6 py-3 border border-slate-700 text-slate-400 rounded-xl text-sm hover:bg-slate-800 transition-colors">
+                                    Retake Quiz
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -287,120 +449,231 @@
                         initials: '{{ session.get("initials", "IN") }}',
                         user: '{{ session.get("user", "") }}'
                     },
-                    sim: {
-                        monthly: 15000,
-                        years: 20,
-                        rate: 12
-                    },
-                    chartInstance: null
+                    sim: { monthly: 15000, years: 20, rate: 12 },
+                    compoundChart: null,
+                    frontierChart: null,
+                    quizCompleted: false,
+                    quiz: {
+                        currentQ: 0,
+                        selectedAnswer: null,
+                        scores: [],
+                        questions: [
+                            {
+                                q: "Your ₹5L portfolio drops 30% in a market crash. What do you do?",
+                                options: [
+                                    { text: "Sell everything immediately to stop further losses.", score: 0 },
+                                    { text: "Hold — I believe in my companies long term.", score: 1 },
+                                    { text: "Buy more. A correction is a discount sale.", score: 2 }
+                                ]
+                            },
+                            {
+                                q: "What is your primary financial goal for this investment?",
+                                options: [
+                                    { text: "Capital preservation above all else — I need this money.", score: 0 },
+                                    { text: "Steady growth over 5+ years — I can handle some bumpy rides.", score: 1 },
+                                    { text: "Maximum long-term wealth creation — I have a 10+ year horizon.", score: 2 }
+                                ]
+                            },
+                            {
+                                q: "How do you react when a stock you own is up 80% in 3 months?",
+                                options: [
+                                    { text: "I book profits immediately — a bird in hand is worth two in the bush.", score: 0 },
+                                    { text: "I sell 50% and let the rest ride.", score: 1 },
+                                    { text: "I hold the full position and potentially add more if fundamentals justify it.", score: 2 }
+                                ]
+                            },
+                            {
+                                q: "What percentage of your monthly income can you comfortably invest?",
+                                options: [
+                                    { text: "Less than 10% — I have significant monthly obligations.", score: 0 },
+                                    { text: "10–30% — reasonable balance between investing and lifestyle.", score: 1 },
+                                    { text: "30%+ — I live frugally and maximize investable capital.", score: 2 }
+                                ]
+                            },
+                        ]
+                    }
                 }
             },
             computed: {
-                calcPrincipal() {
-                    return this.sim.monthly * 12 * this.sim.years;
-                },
+                calcPrincipal() { return this.sim.monthly * 12 * this.sim.years; },
                 calcTotal() {
                     let total = 0;
                     const r = this.sim.rate / 100 / 12;
                     const months = this.sim.years * 12;
-                    for (let i = 0; i < months; i++) {
-                        total += parseFloat(this.sim.monthly);
-                        total *= (1 + r);
-                    }
+                    for (let i = 0; i < months; i++) { total += parseFloat(this.sim.monthly); total *= (1 + r); }
                     return total;
+                },
+                quizResult() {
+                    const total = this.quiz.scores.reduce((a, b) => a + b, 0);
+                    const max = this.quiz.questions.length * 2;
+                    const pct = (total / max) * 100;
+
+                    if (pct < 35) return {
+                        title: 'Conservative Preserver',
+                        icon: 'fas fa-shield-alt text-blue-400',
+                        bgClass: 'bg-blue-500/20 border border-blue-500/30',
+                        textClass: 'text-blue-400',
+                        description: 'Capital preservation is your north star. Your priority is protecting your principal against inflation while keeping volatility minimal. A fixed income-heavy portfolio with systematic gold exposure suits you best.',
+                        allocations: [
+                            { label: 'Govt. Bonds & FDs', pct: 50, colorClass: 'text-blue-400', barClass: 'bg-blue-500', note: 'Treasury bills, 7.1% G-Secs, and SGB for inflation hedge' },
+                            { label: 'Large-Cap Index Funds', pct: 25, colorClass: 'text-purple-400', barClass: 'bg-purple-500', note: 'NIFTY 50 or Sensex index fund for equity exposure' },
+                            { label: 'Gold / SGB', pct: 15, colorClass: 'text-yellow-400', barClass: 'bg-yellow-500', note: 'Sovereign Gold Bonds for 2.5% yield + gold appreciation' },
+                            { label: 'Liquid / Emergency Fund', pct: 10, colorClass: 'text-slate-400', barClass: 'bg-slate-500', note: '3–6 months expenses in liquid funds' },
+                        ]
+                    };
+                    if (pct < 65) return {
+                        title: 'Balanced Strategist',
+                        icon: 'fas fa-balance-scale text-emerald-400',
+                        bgClass: 'bg-emerald-500/20 border border-emerald-500/30',
+                        textClass: 'text-emerald-400',
+                        description: 'You understand risk intellectually and can tolerate market tremors. You want growth but respect downside protection. A classic 60/40 portfolio with international diversification suits you.',
+                        allocations: [
+                            { label: 'Large & Mid-Cap Equities', pct: 45, colorClass: 'text-purple-400', barClass: 'bg-purple-500', note: 'NIFTY 500 index + select quality mid-cap funds' },
+                            { label: 'Bonds & Debt Funds', pct: 30, colorClass: 'text-blue-400', barClass: 'bg-blue-500', note: 'Short-to-medium duration corporate bond funds' },
+                            { label: 'International Index', pct: 15, colorClass: 'text-orange-400', barClass: 'bg-orange-500', note: 'Nasdaq 100 or S&P 500 index fund for USD hedging' },
+                            { label: 'Gold / SGB', pct: 10, colorClass: 'text-yellow-400', barClass: 'bg-yellow-500', note: 'Sovereign Gold Bonds as macro hedge' },
+                        ]
+                    };
+                    return {
+                        title: 'Aggressive Accumulator',
+                        icon: 'fas fa-rocket text-purple-400',
+                        bgClass: 'bg-purple-500/20 border border-purple-500/30',
+                        textClass: 'text-gradient',
+                        description: 'You embrace volatility as a mechanism for extreme compounding. You have a long time horizon, high-risk tolerance, and understand that short-term turbulence is the price of admission for superior long-term returns.',
+                        allocations: [
+                            { label: 'Small & Mid-Cap Equities', pct: 50, colorClass: 'text-purple-400', barClass: 'bg-purple-500', note: 'High-growth mid and small cap exposure for exponential compounding' },
+                            { label: 'Large-Cap Equities', pct: 25, colorClass: 'text-blue-400', barClass: 'bg-blue-500', note: 'Quality large-cap for portfolio anchor and stability' },
+                            { label: 'International / Sectoral', pct: 15, colorClass: 'text-orange-400', barClass: 'bg-orange-500', note: 'Tech, semiconductor, or healthcare thematic funds' },
+                            { label: 'Gold / Alternatives', pct: 10, colorClass: 'text-yellow-400', barClass: 'bg-yellow-500', note: 'Minimal hedge position — volatility is your friend' },
+                        ]
+                    };
                 }
             },
             mounted() {
-                this.initChart();
+                this.initCompoundChart();
+                this.initFrontierChart();
+                this.initScrollProgress();
             },
             methods: {
                 formatPrice(val) {
-                    if(val > 10000000) return (val/10000000).toFixed(2) + ' Cr';
+                    if (val >= 10000000) return (val / 10000000).toFixed(2) + ' Cr';
+                    if (val >= 100000) return (val / 100000).toFixed(2) + ' L';
                     return Math.round(val).toLocaleString('en-IN');
                 },
-                generateData() {
-                    let labels = [];
-                    let principalData = [];
-                    let interestData = [];
-                    
-                    let runningPrincipal = 0;
-                    let runningTotal = 0;
+                generateCompoundData() {
+                    const labels = [], principal = [], interest = [];
+                    let rTotal = 0, rPrincipal = 0;
                     const r = this.sim.rate / 100;
-
-                    for(let y=1; y<=this.sim.years; y++) {
-                        labels.push(`Year ${y}`);
-                        runningPrincipal += (this.sim.monthly * 12);
-                        
-                        // Simple annual compound approximation for the chart
-                        runningTotal = (runningTotal + (this.sim.monthly * 12)) * (1 + r);
-                        
-                        principalData.push(runningPrincipal);
-                        interestData.push(runningTotal - runningPrincipal);
+                    for (let y = 1; y <= this.sim.years; y++) {
+                        rPrincipal += this.sim.monthly * 12;
+                        rTotal = (rTotal + this.sim.monthly * 12) * (1 + r);
+                        labels.push('Y' + y);
+                        principal.push(rPrincipal);
+                        interest.push(Math.max(0, rTotal - rPrincipal));
                     }
-                    return { labels, principalData, interestData };
+                    return { labels, principal, interest };
                 },
-                initChart() {
+                initCompoundChart() {
                     const ctx = document.getElementById('compoundChart').getContext('2d');
-                    
-                    this.chartInstance = new Chart(ctx, {
-                        type: 'bar', // Stacked area chart feeling
+                    const d = this.generateCompoundData();
+                    this.compoundChart = new Chart(ctx, {
+                        type: 'bar',
                         data: {
-                            labels: this.generateData().labels,
+                            labels: d.labels,
                             datasets: [
-                                {
-                                    label: 'Your Principal',
-                                    data: this.generateData().principalData,
-                                    backgroundColor: '#334155',
-                                    stack: 'Stack 0',
-                                },
-                                {
-                                    label: 'Compound Interest',
-                                    data: this.generateData().interestData,
-                                    backgroundColor: '#A855F7',
-                                    stack: 'Stack 0',
-                                }
+                                { label: 'Principal', data: d.principal, backgroundColor: '#334155', stack: 'S0', borderRadius: 2 },
+                                { label: 'Compound Interest', data: d.interest, backgroundColor: (ctx) => {
+                                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                                    g.addColorStop(0, '#A855F7'); g.addColorStop(1, '#3B82F6');
+                                    return g;
+                                }, stack: 'S0', borderRadius: 2 }
                             ]
                         },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
+                            responsive: true, maintainAspectRatio: false,
                             interaction: { mode: 'index', intersect: false },
                             plugins: {
-                                legend: { position: 'bottom', labels: { color: '#94A3B8', usePointStyle: true, boxWidth: 8 } },
-                                tooltip: { 
-                                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
-                                    titleColor: '#fff', 
-                                    bodyColor: '#cbd5e1',
-                                    borderColor: 'rgba(51, 65, 85, 0.8)',
-                                    borderWidth: 1,
-                                    padding: 12
+                                legend: { position: 'bottom', labels: { color: '#64748B', usePointStyle: true, boxWidth: 8 } },
+                                tooltip: { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, titleColor: '#fff', bodyColor: '#94A3B8', padding: 12,
+                                    callbacks: { label: (c) => ' ₹' + Math.round(c.raw).toLocaleString('en-IN') }
                                 }
                             },
                             scales: {
-                                x: { stacked: true, grid: { display: false }, ticks: { color: '#64748B', maxTicksLimit: 10 } },
-                                y: { 
-                                    stacked: true, 
-                                    grid: { color: '#1E293B', drawBorder: false }, 
-                                    ticks: { 
-                                        color: '#64748B',
-                                        callback: function(value) {
-                                            if (value >= 10000000) return '₹' + (value / 10000000).toFixed(1) + ' Cr';
-                                            if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + ' L';
-                                            return '₹' + value;
-                                        } 
-                                    } 
-                                }
+                                x: { stacked: true, grid: { display: false }, ticks: { color: '#475569', maxTicksLimit: 10, font: { size: 10 } } },
+                                y: { stacked: true, grid: { color: '#1E293B', drawBorder: false }, ticks: { color: '#475569', font: { size: 10 },
+                                    callback: (v) => v >= 10000000 ? '₹' + (v/10000000).toFixed(1) + 'Cr' : v >= 100000 ? '₹' + (v/100000).toFixed(0) + 'L' : '₹' + v
+                                }}
                             }
                         }
                     });
                 },
                 updateSimChart() {
-                    if(!this.chartInstance) return;
-                    const newData = this.generateData();
-                    this.chartInstance.data.labels = newData.labels;
-                    this.chartInstance.data.datasets[0].data = newData.principalData;
-                    this.chartInstance.data.datasets[1].data = newData.interestData;
-                    this.chartInstance.update();
+                    if (!this.compoundChart) return;
+                    const d = this.generateCompoundData();
+                    this.compoundChart.data.labels = d.labels;
+                    this.compoundChart.data.datasets[0].data = d.principal;
+                    this.compoundChart.data.datasets[1].data = d.interest;
+                    this.compoundChart.update();
+                },
+                initFrontierChart() {
+                    const ctx = document.getElementById('frontierChart').getContext('2d');
+                    // Generate a realistic efficient frontier curve
+                    const frontierPts = [], subPts = [], randomPts = [];
+                    for (let r = 5; r <= 25; r += 0.5) {
+                        const ret = 3 + (r / 25) * 14 + Math.pow(r / 25, 2) * 4;
+                        frontierPts.push({ x: r, y: parseFloat(ret.toFixed(2)) });
+                    }
+                    // Sub-optimal portfolios (below frontier)
+                    for (let i = 0; i < 18; i++) {
+                        subPts.push({ x: 5 + Math.random() * 20, y: 3 + Math.random() * 12 });
+                    }
+                    this.frontierChart = new Chart(ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [
+                                { label: 'Efficient Frontier', data: frontierPts, backgroundColor: '#A855F7', borderColor: '#A855F7', pointRadius: 4, showLine: true, tension: 0.4, fill: false, borderWidth: 2 },
+                                { label: 'Sub-optimal Portfolios', data: subPts, backgroundColor: 'rgba(148,163,184,0.3)', pointRadius: 5, showLine: false },
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { color: '#64748B', usePointStyle: true, boxWidth: 8, font: { size: 10 } } },
+                                tooltip: { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, titleColor: '#fff', bodyColor: '#94A3B8',
+                                    callbacks: { label: (c) => ` Risk: ${c.raw.x.toFixed(1)}% | Return: ${c.raw.y.toFixed(1)}%` }
+                                }
+                            },
+                            scales: {
+                                x: { title: { display: true, text: 'Portfolio Risk (σ %)', color: '#64748B', font: { size: 10 } }, grid: { color: '#1E293B' }, ticks: { color: '#475569', font: { size: 10 } } },
+                                y: { title: { display: true, text: 'Expected Return (%)', color: '#64748B', font: { size: 10 } }, grid: { color: '#1E293B' }, ticks: { color: '#475569', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                },
+                nextQuestion() {
+                    if (this.quiz.selectedAnswer === null) return;
+                    const score = this.quiz.questions[this.quiz.currentQ].options[this.quiz.selectedAnswer].score;
+                    this.quiz.scores.push(score);
+                    this.quiz.selectedAnswer = null;
+                    if (this.quiz.currentQ + 1 >= this.quiz.questions.length) {
+                        this.quizCompleted = true;
+                    } else {
+                        this.quiz.currentQ++;
+                    }
+                },
+                resetQuiz() {
+                    this.quiz.currentQ = 0;
+                    this.quiz.selectedAnswer = null;
+                    this.quiz.scores = [];
+                    this.quizCompleted = false;
+                },
+                initScrollProgress() {
+                    const container = document.getElementById('scroll-container');
+                    const bar = document.getElementById('progress-bar');
+                    container.addEventListener('scroll', () => {
+                        const pct = (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
+                        bar.style.width = pct + '%';
+                    });
                 }
             }
         }).mount('#app');

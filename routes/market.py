@@ -92,48 +92,99 @@ def get_stock_history(symbol):
         return jsonify({"error": str(e)}), 400
 
 @market_bp.route('/news')
-@cache.cached(timeout=900) # Cache for 15 minutes
+@cache.cached(timeout=600)  # Cache for 10 minutes
 def get_market_news():
+    import re
+    import email.utils
+
+    # Indian financial news RSS feeds — fast, reliable, updated throughout the trading day
     feeds = [
-        {"url": "https://www.theguardian.com/business/rss", "source": "The Guardian", "type": "Business"},
-        {"url": "https://www.economist.com/finance-and-economics/rss.xml", "source": "The Economist", "type": "Finance"}
+        {
+            "url": "https://economictimes.indiatimes.com/markets/rss.cms",
+            "source": "Economic Times",
+            "type": "Markets",
+            "color": "blue"
+        },
+        {
+            "url": "https://www.moneycontrol.com/rss/MCtopnews.xml",
+            "source": "MoneyControl",
+            "type": "Top News",
+            "color": "green"
+        },
+        {
+            "url": "https://feeds.feedburner.com/ndtvnews-business",
+            "source": "NDTV Business",
+            "type": "Business",
+            "color": "red"
+        },
+        {
+            "url": "https://www.livemint.com/rss/markets",
+            "source": "LiveMint",
+            "type": "Markets",
+            "color": "purple"
+        }
     ]
-    
+
+    # Spoof a browser User-Agent to prevent 403 Forbidden responses from feed servers
+    ua_headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        )
+    }
+
     news_items = []
-    
+
     for feed in feeds:
         try:
-            parsed = feedparser.parse(feed["url"])
-            for entry in parsed.entries[:8]: 
+            parsed = feedparser.parse(feed["url"], request_headers=ua_headers)
+
+            if parsed.bozo and not parsed.entries:
+                print(f"Feed bozo error for {feed['source']}: {parsed.bozo_exception}")
+                continue
+
+            for entry in parsed.entries[:6]:
                 summary = ""
                 if hasattr(entry, 'summary'):
-                    # Strip basic HTML tags from summary for a clean preview text
-                    import re
-                    summary = re.sub('<[^<]+?>', '', entry.summary)
-                    if len(summary) > 150: summary = summary[:147] + "..."
-                    
+                    summary = re.sub(r'<[^>]+>', '', entry.summary).strip()
+                    if len(summary) > 180:
+                        summary = summary[:177] + "..."
+                elif hasattr(entry, 'description'):
+                    summary = re.sub(r'<[^>]+>', '', entry.description).strip()
+                    if len(summary) > 180:
+                        summary = summary[:177] + "..."
+
+                # Skip entries with no real content
+                if not entry.get('title', '').strip():
+                    continue
+
                 news_items.append({
-                    "title": entry.title,
-                    "link": entry.link,
-                    "published": entry.get('published', ''),
+                    "title": entry.title.strip(),
+                    "link": entry.get('link', '#'),
+                    "published": entry.get('published', entry.get('updated', '')),
                     "source": feed["source"],
                     "type": feed["type"],
+                    "color": feed["color"],
                     "summary": summary
                 })
         except Exception as e:
-            print(f"Error parsing feed {feed['url']}: {e}")
-            
-    import email.utils
+            print(f"Error parsing feed {feed['source']} ({feed['url']}): {e}")
+            # Continue processing remaining feeds even if one fails
+            continue
+
     def parse_pub_date(date_str):
+        if not date_str:
+            return 0
         try:
             parsed_date = email.utils.parsedate_tz(date_str)
             if parsed_date:
                 return email.utils.mktime_tz(parsed_date)
             return 0
-        except:
+        except Exception:
             return 0
 
-    # Sort so newest items across both feeds appear first
+    # Sort newest first across all feeds
     news_items.sort(key=lambda x: parse_pub_date(x['published']), reverse=True)
-    
-    return jsonify(news_items[:12]) # Return top 12 combined
+
+    return jsonify(news_items[:16])  # Return top 16 combined
