@@ -99,6 +99,14 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
         }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 25s linear infinite;
+        }
     </style>
 </head>
 
@@ -291,16 +299,43 @@
             <div class="flex-1 overflow-y-auto p-8 relative">
 
                 <!-- Dashboard View -->
-                <div v-show="currentTab === 'dashboard'" class="max-w-6xl mx-auto space-y-6 fade-in">
+                <div v-show="currentTab === 'dashboard'" class="max-w-6xl mx-auto space-y-5 fade-in">
 
-                    <!-- Greeting -->
+                    <!-- Market Ticker Strip -->
+                    <div class="glass-panel overflow-hidden relative">
+                        <div class="flex animate-marquee whitespace-nowrap py-2.5 px-4 gap-8">
+                            <span v-for="t in tickerData" :key="t.name" class="inline-flex items-center gap-2 text-xs font-mono">
+                                <span class="text-slate-400 font-bold">[[ t.name ]]</span>
+                                <span class="text-white font-bold">[[ t.currency ]][[ t.price ]]</span>
+                                <span :class="t.up ? 'text-emerald-400' : 'text-red-400'" class="font-bold">
+                                    <i :class="t.up ? 'fas fa-caret-up' : 'fas fa-caret-down'" class="mr-0.5"></i>[[ t.change ]]%
+                                </span>
+                            </span>
+                            <!-- Duplicate for seamless loop -->
+                            <span v-for="t in tickerData" :key="t.name + '-dup'" class="inline-flex items-center gap-2 text-xs font-mono">
+                                <span class="text-slate-400 font-bold">[[ t.name ]]</span>
+                                <span class="text-white font-bold">[[ t.currency ]][[ t.price ]]</span>
+                                <span :class="t.up ? 'text-emerald-400' : 'text-red-400'" class="font-bold">
+                                    <i :class="t.up ? 'fas fa-caret-up' : 'fas fa-caret-down'" class="mr-0.5"></i>[[ t.change ]]%
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Greeting + Clock -->
                     <div class="flex items-center justify-between">
                         <div>
                             <h2 class="text-2xl lg:text-3xl font-extrabold text-white">Good [[ greeting ]], <span class="text-gradient">[[ session.name.split(' ')[0] ]]</span> 👋</h2>
                             <p class="text-sm text-slate-400 mt-1">Here's your financial snapshot for <span class="text-slate-300 font-medium">[[ todayFormatted ]]</span></p>
                         </div>
-                        <div class="hidden lg:flex items-center gap-2 text-xs text-slate-500 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
-                            <i class="fas fa-circle text-emerald-400 text-[6px] animate-pulse"></i> Live Data
+                        <div class="hidden lg:flex items-center gap-3">
+                            <div class="text-right">
+                                <div class="text-xl font-extrabold text-white font-mono">[[ liveTime ]]</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-wider">IST</div>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700">
+                                <i class="fas fa-circle text-emerald-400 text-[6px] animate-pulse"></i> Live
+                            </div>
                         </div>
                     </div>
 
@@ -380,14 +415,14 @@
                                 <div class="text-[10px] text-slate-500">BSE stocks & bonds</div>
                             </div>
                         </a>
-                        <a href="/budgets"
+                        <a href="/invest"
                             class="glass-panel p-4 flex items-center gap-3 hover:-translate-y-0.5 transition-all group">
-                            <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center group-hover:bg-purple-500/25 transition-colors">
-                                <i class="fas fa-bullseye text-purple-400"></i>
+                            <div class="w-10 h-10 rounded-xl bg-yellow-500/15 flex items-center justify-center group-hover:bg-yellow-500/25 transition-colors">
+                                <i class="fas fa-brain text-yellow-400"></i>
                             </div>
                             <div class="text-left">
-                                <div class="text-xs font-bold text-white">Budgets</div>
-                                <div class="text-[10px] text-slate-500">Track spending</div>
+                                <div class="text-xs font-bold text-white">AI Advisor</div>
+                                <div class="text-[10px] text-slate-500">Get smart tips</div>
                             </div>
                         </a>
                     </div>
@@ -447,12 +482,12 @@
                         </div>
                     </div>
 
-                    <!-- AI Insight + Financial Health -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- AI Insight + Spending Donut -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <!-- AI Insight -->
                         <div class="glass-panel p-5 border-l-4 border-l-purple-500">
                             <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <i class="fas fa-brain text-purple-400"></i>
                                 </div>
                                 <div>
@@ -460,33 +495,103 @@
                                     <p class="text-sm text-slate-300 leading-relaxed">
                                         "Your spending on 'Dining' is high. Starting a <span class="text-white font-bold">₹5,000 SIP</span> in a Nifty 50 fund could yield <span class="text-emerald-400 font-bold">₹8.5 Lakhs</span> over 10 years."
                                     </p>
+                                    <div class="mt-3 flex gap-2">
+                                        <a href="/invest" class="text-[10px] bg-purple-500/15 text-purple-400 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-500/25 transition-colors border border-purple-500/20">
+                                            <i class="fas fa-rocket mr-1"></i> Start SIP →
+                                        </a>
+                                        <a href="/academy" class="text-[10px] bg-slate-800 text-slate-400 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-700 transition-colors border border-slate-700">
+                                            <i class="fas fa-book mr-1"></i> Learn More
+                                        </a>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Spending Breakdown Donut -->
+                        <div class="glass-panel p-5">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider mb-3"><i class="fas fa-chart-pie text-blue-400 mr-1"></i> Spending Breakdown</h3>
+                            <div class="h-44 w-full flex items-center justify-center">
+                                <canvas id="spendingDonutChart"></canvas>
                             </div>
                         </div>
 
                         <!-- Financial Health Score -->
                         <div class="glass-panel p-5">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-white uppercase tracking-wider"><i class="fas fa-heartbeat text-emerald-400 mr-1"></i> Financial Health Score</h3>
-                                <span class="text-2xl font-extrabold font-mono" :class="healthScore >= 70 ? 'text-emerald-400' : healthScore >= 40 ? 'text-yellow-400' : 'text-red-400'">[[ healthScore ]]/100</span>
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider"><i class="fas fa-heartbeat text-emerald-400 mr-1"></i> Health Score</h3>
+                                <span class="text-2xl font-extrabold font-mono" :class="healthScore >= 70 ? 'text-emerald-400' : healthScore >= 40 ? 'text-yellow-400' : 'text-red-400'">[[ healthScore ]]<span class="text-sm text-slate-500">/100</span></span>
                             </div>
-                            <div class="h-2.5 bg-slate-800 rounded-full overflow-hidden mb-3">
+                            <div class="h-2.5 bg-slate-800 rounded-full overflow-hidden mb-4">
                                 <div class="h-full rounded-full transition-all duration-1000"
                                     :style="'width:' + healthScore + '%'"
                                     :class="healthScore >= 70 ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : healthScore >= 40 ? 'bg-gradient-to-r from-yellow-600 to-yellow-400' : 'bg-gradient-to-r from-red-600 to-red-400'"></div>
                             </div>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div class="text-center">
-                                    <div class="text-[10px] text-slate-500">Savings</div>
-                                    <div class="text-xs font-bold" :class="savingsRate >= 20 ? 'text-emerald-400' : 'text-yellow-400'"><i :class="savingsRate >= 20 ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'" class="mr-0.5"></i>[[ savingsRate >= 20 ? 'Good' : 'Low' ]]</div>
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="savingsRate >= 20 ? 'bg-emerald-400' : 'bg-yellow-400'"></div>
+                                        <span class="text-[10px] text-slate-400">Savings Rate</span>
+                                    </div>
+                                    <span class="text-xs font-bold" :class="savingsRate >= 20 ? 'text-emerald-400' : 'text-yellow-400'">[[ savingsRate ]]%</span>
                                 </div>
-                                <div class="text-center">
-                                    <div class="text-[10px] text-slate-500">Spending</div>
-                                    <div class="text-xs font-bold" :class="data.expenses < data.balance * 0.5 ? 'text-emerald-400' : 'text-yellow-400'"><i :class="data.expenses < data.balance * 0.5 ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'" class="mr-0.5"></i>[[ data.expenses < data.balance * 0.5 ? 'Healthy' : 'High' ]]</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="data.expenses < data.balance * 0.5 ? 'bg-emerald-400' : 'bg-yellow-400'"></div>
+                                        <span class="text-[10px] text-slate-400">Burn Ratio</span>
+                                    </div>
+                                    <span class="text-xs font-bold" :class="data.expenses < data.balance * 0.5 ? 'text-emerald-400' : 'text-yellow-400'">[[ data.balance > 0 ? Math.round(data.expenses / data.balance * 100) : 0 ]]%</span>
                                 </div>
-                                <div class="text-center">
-                                    <div class="text-[10px] text-slate-500">Investing</div>
-                                    <div class="text-xs font-bold text-blue-400"><i class="fas fa-info-circle mr-0.5"></i><a href="/invest" class="hover:text-blue-300">Start Now</a></div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                        <span class="text-[10px] text-slate-400">Investing</span>
+                                    </div>
+                                    <a href="/invest" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">Start →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Goal + Category Bars -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <!-- Monthly Savings Goal -->
+                        <div class="glass-panel p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider"><i class="fas fa-bullseye text-purple-400 mr-1"></i> Monthly Savings Goal</h3>
+                                <span class="text-sm font-bold text-purple-400 font-mono">[[ formatPrice(Math.max(0, data.balance - data.expenses)) ]] / ₹50,000</span>
+                            </div>
+                            <div class="relative h-4 bg-slate-800 rounded-full overflow-hidden mb-3">
+                                <div class="absolute h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-purple-600 via-purple-500 to-blue-500"
+                                    :style="'width:' + Math.min((Math.max(0, data.balance - data.expenses) / 50000) * 100, 100) + '%'"></div>
+                                <!-- Milestone markers -->
+                                <div class="absolute top-0 h-full flex items-center" style="left:25%"><div class="w-0.5 h-full bg-slate-600/50"></div></div>
+                                <div class="absolute top-0 h-full flex items-center" style="left:50%"><div class="w-0.5 h-full bg-slate-600/50"></div></div>
+                                <div class="absolute top-0 h-full flex items-center" style="left:75%"><div class="w-0.5 h-full bg-slate-600/50"></div></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>₹0</span>
+                                <span>₹12.5K</span>
+                                <span>₹25K</span>
+                                <span>₹37.5K</span>
+                                <span>₹50K</span>
+                            </div>
+                        </div>
+
+                        <!-- Category Breakdown Bars -->
+                        <div class="glass-panel p-5">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider mb-3"><i class="fas fa-layer-group text-orange-400 mr-1"></i> Expense Categories</h3>
+                            <div class="space-y-3">
+                                <div v-for="cat in expenseCategories" :key="cat.name">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="flex items-center gap-2">
+                                            <i :class="cat.icon" :style="'color:' + cat.color" class="text-xs"></i>
+                                            <span class="text-[11px] text-slate-300 font-medium">[[ cat.name ]]</span>
+                                        </div>
+                                        <span class="text-[11px] text-slate-400 font-mono font-bold">₹[[ cat.amount.toLocaleString('en-IN') ]]</span>
+                                    </div>
+                                    <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-700" :style="'width:' + cat.pct + '%; background:' + cat.color"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -735,6 +840,25 @@
                 return {
                     currentTab: 'dashboard',
                     chartRange: '6M',
+                    liveTime: '',
+                    liveTimeInterval: null,
+                    tickerData: [
+                        { name: 'SENSEX', price: '79,802', change: '+0.45', up: true, currency: '₹' },
+                        { name: 'NIFTY 50', price: '24,180', change: '+0.38', up: true, currency: '₹' },
+                        { name: 'BANK NIFTY', price: '54,920', change: '-0.12', up: false, currency: '₹' },
+                        { name: 'NASDAQ', price: '18,456', change: '+1.22', up: true, currency: '$' },
+                        { name: 'GOLD', price: '89,540', change: '+0.65', up: true, currency: '₹' },
+                        { name: 'SILVER', price: '1,02,350', change: '-0.28', up: false, currency: '₹' },
+                        { name: 'USD/INR', price: '86.42', change: '+0.05', up: true, currency: '₹' },
+                        { name: 'CRYPTO', price: '83,210', change: '+2.15', up: true, currency: '$' }
+                    ],
+                    expenseCategories: [
+                        { name: 'Food & Dining', icon: 'fas fa-utensils', color: '#F97316', amount: 4500, pct: 45 },
+                        { name: 'Shopping', icon: 'fas fa-shopping-bag', color: '#A855F7', amount: 3200, pct: 32 },
+                        { name: 'Travel', icon: 'fas fa-car', color: '#3B82F6', amount: 1800, pct: 18 },
+                        { name: 'Utilities', icon: 'fas fa-bolt', color: '#EAB308', amount: 1200, pct: 12 },
+                        { name: 'Entertainment', icon: 'fas fa-film', color: '#EC4899', amount: 800, pct: 8 }
+                    ],
                     data: {
                         balance: 0,
                         expenses: 0,
@@ -751,7 +875,8 @@
                     },
                     charts: {
                         main: null,
-                        sim: null
+                        sim: null,
+                        donut: null
                     },
                     showNotifications: false,
                     showNewModal: false,
@@ -806,6 +931,20 @@
                     document.body.classList.remove('light-mode');
                 }
                 this.fetchData();
+
+                // Live clock
+                const updateTime = () => {
+                    const now = new Date();
+                    this.liveTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                };
+                updateTime();
+                this.liveTimeInterval = setInterval(updateTime, 1000);
+
+                // Fetch live ticker data
+                this.fetchTickerData();
+            },
+            beforeUnmount() {
+                if (this.liveTimeInterval) clearInterval(this.liveTimeInterval);
             },
             methods: {
                 toggleTheme() {
@@ -835,12 +974,63 @@
                         this.data = await res.json();
                         this.$nextTick(() => {
                             this.initMainChart();
+                            this.initSpendingDonut();
                         });
                     } catch (e) {
                         console.error("Dashboard fetch failed:", e);
                         alert("Failed to load dashboard data. Please log in again.");
                         window.location.href = '/login';
                     }
+                },
+                async fetchTickerData() {
+                    try {
+                        const res = await fetch('/market/indices');
+                        const data = await res.json();
+                        if (data && data.length > 0) {
+                            const mapped = data.map(d => ({
+                                name: d.name,
+                                price: d.price.toLocaleString(d.name === 'NASDAQ' ? 'en-US' : 'en-IN'),
+                                change: (d.change >= 0 ? '+' : '') + d.change.toFixed(2),
+                                up: d.change >= 0,
+                                currency: d.name === 'NASDAQ' ? '$' : '₹'
+                            }));
+                            // Keep extra tickers
+                            this.tickerData = [...mapped, ...this.tickerData.filter(t => !data.find(d => d.name === t.name))];
+                        }
+                    } catch (e) { /* Use default ticker data */ }
+                },
+                initSpendingDonut() {
+                    const ctx = document.getElementById('spendingDonutChart');
+                    if (!ctx) return;
+                    if (this.charts.donut) this.charts.donut.destroy();
+                    this.charts.donut = new Chart(ctx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: this.expenseCategories.map(c => c.name),
+                            datasets: [{
+                                data: this.expenseCategories.map(c => c.amount),
+                                backgroundColor: this.expenseCategories.map(c => c.color),
+                                borderWidth: 0,
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: { color: '#94A3B8', font: { size: 10 }, padding: 10, usePointStyle: true, pointStyleWidth: 8 }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => ctx.label + ': ₹' + ctx.raw.toLocaleString('en-IN')
+                                    }
+                                }
+                            }
+                        }
+                    });
                 },
                 formatPrice(value) {
                     return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
